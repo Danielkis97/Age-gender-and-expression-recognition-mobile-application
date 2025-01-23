@@ -1,0 +1,5 @@
+tensorflow==2.10.*
+tensorflowjs==3.21.0
+numpy==1.23.*
+Pillow==9.*
+tabulate==0.9.*

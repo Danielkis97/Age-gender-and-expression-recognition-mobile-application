@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+ "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+
+  <!-- The primary language region (often "en"). -->
+  <key>CFBundleDevelopmentRegion</key>
+  <string>en</string>
+
+  <!-- A unique identifier for your app.
+       e.g. "com.yourname.edgeai".
+       This must match what you set in your provisioning profile.
+  -->
+  <key>CFBundleIdentifier</key>
+  <string>com.yourname.edgeai</string>
+
+  <!-- The version of the Info.plist format. Usually "6.0". -->
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+
+  <!-- The display name of your app on the home screen. -->
+  <key>CFBundleName</key>
+  <string>EdgeAIApp</string>
+
+  <!-- The user-visible "short" version, e.g. "1.0". -->
+  <key>CFBundleShortVersionString</key>
+  <string>1.0</string>
+
+  <!-- The build number, can be "1". -->
+  <key>CFBundleVersion</key>
+  <string>1</string>
+
+  <!-- Usage descriptions for camera or photo library if you pick images.
+       Required if you request those permissions.
+  -->
+  <key>NSCameraUsageDescription</key>
+  <string>This app uses the camera to capture images for classification.</string>
+
+  <key>NSPhotoLibraryUsageDescription</key>
+  <string>This app uses the photo library to select images for classification.</string>
+
+</dict>
+</plist>
