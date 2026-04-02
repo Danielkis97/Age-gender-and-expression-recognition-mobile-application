@@ -5,7 +5,6 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib.colors import TwoSlopeNorm
 
 SCOPE_ORDER = ["overall", "gender", "emotion", "age"]
 METRIC_ORDER = ["accuracy", "precision", "recall", "f1"]
@@ -33,52 +32,61 @@ def timing_summary(series: pd.Series) -> dict[str, float]:
     }
 
 
-def _draw_heatmap(
-    ax: plt.Axes,
-    values: pd.DataFrame,
-    title: str,
-    cmap: str,
-    fmt: str,
-    norm: TwoSlopeNorm | None = None,
-    vmin: float | None = None,
-    vmax: float | None = None,
-) -> plt.AxesImage:
-    image = ax.imshow(values.to_numpy(), cmap=cmap, aspect="auto", norm=norm, vmin=vmin, vmax=vmax)
-    ax.set_title(title, fontsize=12, weight="bold")
-    ax.set_xticks(np.arange(len(values.columns)))
-    ax.set_xticklabels([column.title() for column in values.columns], fontsize=10)
-    ax.set_yticks(np.arange(len(values.index)))
-    ax.set_yticklabels([index.title() for index in values.index], fontsize=10)
-
-    for row in range(values.shape[0]):
-        for col in range(values.shape[1]):
-            value = values.iloc[row, col]
-            ax.text(col, row, format(value, fmt), ha="center", va="center", fontsize=9, color="#202020")
-    return image
-
-
 def save_quality_parity_panel(cpu_metrics: pd.DataFrame, gpu_metrics: pd.DataFrame, output_path: Path) -> None:
     cpu = cpu_metrics.set_index("scope").loc[SCOPE_ORDER, METRIC_ORDER]
     gpu = gpu_metrics.set_index("scope").loc[SCOPE_ORDER, METRIC_ORDER]
     delta = gpu - cpu
-    max_abs = max(1e-4, float(np.abs(delta.to_numpy()).max()))
+    abs_delta = np.abs(delta.to_numpy())
+    max_abs = float(abs_delta.max())
+    mean_abs = float(abs_delta.mean())
+    same_cells = int(np.sum(abs_delta < 1e-12))
+    total_cells = int(abs_delta.size)
 
-    fig, axes = plt.subplots(1, 3, figsize=(13.2, 4.8), gridspec_kw={"wspace": 0.28}, constrained_layout=True)
+    # If both runs are identical, show only one matrix to reduce visual clutter.
+    values = cpu if np.allclose(cpu.to_numpy(), gpu.to_numpy(), atol=1e-12) else gpu
+    matrix_title = "Quality metrics (single matrix view)"
 
-    im_abs_1 = _draw_heatmap(axes[0], cpu, "CPU metrics", cmap="YlGnBu", fmt=".4f", vmin=0.55, vmax=0.90)
-    _draw_heatmap(axes[1], gpu, "Colab-GPU metrics", cmap="YlGnBu", fmt=".4f", vmin=0.55, vmax=0.90)
-    im_delta = _draw_heatmap(
-        axes[2],
-        delta,
-        "Delta (GPU - CPU)",
-        cmap="coolwarm",
-        fmt="+.4f",
-        norm=TwoSlopeNorm(vmin=-max_abs, vcenter=0.0, vmax=max_abs),
+    fig = plt.figure(figsize=(11.2, 5.0), constrained_layout=True)
+    grid = fig.add_gridspec(1, 2, width_ratios=[1.9, 1.05], wspace=0.15)
+    ax_matrix = fig.add_subplot(grid[0, 0])
+    ax_info = fig.add_subplot(grid[0, 1])
+
+    image = ax_matrix.imshow(values.to_numpy(), cmap="YlGnBu", aspect="auto", vmin=0.55, vmax=0.90)
+    ax_matrix.set_title(matrix_title, fontsize=12.5, weight="bold")
+    ax_matrix.set_xticks(np.arange(len(values.columns)))
+    ax_matrix.set_xticklabels([column.title() for column in values.columns], fontsize=10)
+    ax_matrix.set_yticks(np.arange(len(values.index)))
+    ax_matrix.set_yticklabels([index.title() for index in values.index], fontsize=10)
+
+    for row in range(values.shape[0]):
+        for col in range(values.shape[1]):
+            ax_matrix.text(col, row, f"{values.iloc[row, col]:.3f}", ha="center", va="center", fontsize=9, color="#202020")
+
+    fig.colorbar(image, ax=ax_matrix, fraction=0.046, pad=0.03, label="Metric value")
+
+    ax_info.axis("off")
+    summary_text = (
+        "Delta summary (GPU - CPU)\n"
+        f"- max |delta|: {max_abs:.4f}\n"
+        f"- mean |delta|: {mean_abs:.4f}\n"
+        f"- identical cells: {same_cells}/{total_cells}\n\n"
+        "Interpretation:\n"
+        "Quality metrics are identical in this run.\n"
+        "The chart therefore shows one clean matrix\n"
+        "instead of duplicated CPU/GPU panels."
+    )
+    ax_info.text(
+        0.02,
+        0.96,
+        summary_text,
+        va="top",
+        ha="left",
+        fontsize=10.2,
+        color="#1f2933",
+        bbox={"boxstyle": "round,pad=0.45", "facecolor": "#f3f6fa", "edgecolor": "#d0d7de"},
     )
 
-    fig.colorbar(im_abs_1, ax=axes[:2], fraction=0.046, pad=0.02, label="Metric value")
-    fig.colorbar(im_delta, ax=axes[2], fraction=0.046, pad=0.02, label="Delta")
-    fig.suptitle("Quality parity view (no overlapping lines)", fontsize=15, weight="bold", y=1.02)
+    fig.suptitle("Quality overview", fontsize=15, weight="bold")
     fig.savefig(output_path, dpi=220, bbox_inches="tight")
     plt.close(fig)
 
