@@ -1,18 +1,73 @@
 # Edge AI Face Recognition (Age, Gender, Emotion)
 
-This is my coursework project for running age, gender, and emotion inference fully on a local machine (no cloud API calls).  
-It supports webcam mode and single-image mode, using OpenCV for face handling and [DeepFace](https://github.com/serengil/deepface) pretrained models.
+This is my coursework project for age, gender, and emotion recognition on a local machine (edge setup, no cloud API calls).
+It supports webcam mode and single-image mode, using OpenCV + [DeepFace](https://github.com/serengil/deepface).
 
-**Stack:** Python **3.10–3.12** (recommended), OpenCV, DeepFace, TensorFlow, **Rich**, **matplotlib**, **scikit-learn** (confusion matrices / reports). On Windows, **Python 3.13+ / 3.14** usually cannot install TensorFlow yet (`No matching distribution found for tensorflow`) — install 3.12 alongside and use `py -3.12` for the venv.
+Dependencies are in [`requirements.txt`](requirements.txt) so anyone can recreate the same environment.
 
-Dependencies are kept in [`requirements.txt`](requirements.txt), so the environment can be recreated easily.
+> Note: this README is local-first. Colab/GPU comparison details are documented in the project report.
 
-> Note: this README focuses on local execution and reproducibility. Any Colab-specific workflow details can stay in the project report.
+## Python version (important)
+
+Use **Python 3.12** (best) or **Python 3.11**.
+
+Why: TensorFlow installation is stable there.  
+On Windows, Python 3.13/3.14 often fails with:
+`No matching distribution found for tensorflow`
+
+### How to get Python 3.12 / 3.11
+
+Option A (recommended): download from [python.org](https://www.python.org/downloads/)
+
+- install **64-bit** Python 3.12 (or 3.11)
+- enable:
+  - `Add python.exe to PATH`
+  - Python launcher (`py`)
+
+Option B (Windows via winget):
+
+```powershell
+winget install Python.Python.3.12 --accept-package-agreements --accept-source-agreements
+```
+
+(or replace `3.12` with `3.11`)
+
+## Quick Start (copy/paste)
+
+**Windows (PowerShell)**
+
+```powershell
+git clone https://github.com/Danielkis97/Age-gender-and-expression-recognition-mobile-application.git
+cd Age-gender-and-expression-recognition-mobile-application
+.\setup.ps1
+python main.py
+```
+
+**Linux / macOS**
+
+```bash
+git clone https://github.com/Danielkis97/Age-gender-and-expression-recognition-mobile-application.git
+cd Age-gender-and-expression-recognition-mobile-application
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+python main.py
+```
+
+## Smoke Test (after install)
+
+Run this once to confirm core imports:
+
+```bash
+python -c "import cv2, tensorflow, deepface; print('imports ok')"
+```
+
+If this fails, make sure you are on Python 3.12/3.11 and run `.\setup.ps1` again.
 
 ## Reproducibility (fresh clone)
 
-1. Use **Python 3.10–3.12** so `pip install tensorflow` can find a wheel. If only 3.14 is installed, download **3.12.x 64-bit** from [python.org](https://www.python.org/downloads/) (enable **py launcher** and PATH).
-2. From the project root, create a venv **with that version** and install:
+From the project root, create a venv with Python 3.12 (or 3.11) and install:
 
 **Windows (PowerShell)**
 
@@ -25,7 +80,7 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-(Use `py -3.11` or `py -3.10` if you do not have 3.12.)
+(Use `py -3.11` if you do not have 3.12.)
 
 Or run the helper script (same folder):
 
@@ -49,28 +104,6 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### Windows: `py -3.12` — “No suitable Python runtime”
-
-Install **64-bit Python 3.12** (adds the `py -3.12` target):
-
-- Installer: [python.org → Downloads → 3.12.x](https://www.python.org/downloads/) (tick **“Add python.exe to PATH”** and **install launcher for all users** if offered), or  
-- Winget (non-interactive):  
-  `winget install Python.Python.3.12 --accept-package-agreements --accept-source-agreements`
-
-Then `py -0p` should list `-V:3.12` and `py -3.12 -m venv .venv` works.
-
-### Windows: `.venv` won’t delete / `failed to locate pyvenv.cfg`
-
-The venv was **removed while still in use** (e.g. shell had it activated, or PyCharm used `.venv` as interpreter). Python locks `python.exe`, so `Remove-Item` fails and the folder ends up **half-deleted**.
-
-1. In **every** PowerShell: run `deactivate` (repeat until the prompt no longer shows `(.venv)`).
-2. **Close** other terminals and **PyCharm** (or change the project interpreter to something other than this `.venv`).
-3. Delete the folder: in Explorer delete `age-gender-emotion-edge\.venv`, or in a **new** PowerShell (not inside the old venv):  
-   `Remove-Item -Recurse -Force .venv`
-4. Recreate: `py -3.12 -m venv .venv` then `pip install -r requirements.txt`.
-
-`ModuleNotFoundError: cv2` here means packages were never fully installed (TensorFlow failed first) or you’re not using the venv’s `python`.
-
 ## Privacy
 
 Use only data you are allowed to process. For coursework reports, prefer **anonymized** or stock images; avoid identifying real people without consent.
@@ -84,6 +117,17 @@ python evaluate.py --images_dir dataset/images --labels_csv dataset/labels.csv
 ```
 
 The first run of DeepFace may **download model weights** (one time). `tf-keras` is needed on many Windows setups for DeepFace’s RetinaFace stack.
+
+## Expected outputs (evaluation)
+
+After a successful evaluation run, these files should exist under `results/`:
+
+- `evaluation_results.csv`
+- `predictions.csv`
+- `metrics.csv`
+- `confusion_gender.csv`
+- `confusion_age.csv`
+- `confusion_emotion.csv`
 
 ## Run — interactive menu (default)
 
@@ -105,7 +149,7 @@ python main.py
 
 ```bash
 python main.py --webcam
-python main.py --image path\to\photo.jpg
+python main.py --image path/to/photo.jpg
 ```
 
 ## How it works
@@ -121,7 +165,7 @@ python main.py --image path\to\photo.jpg
 CSV columns: `filename`, `true_gender`, `true_emotion`, `true_age_group`. Template: [data/labels_example.csv](data/labels_example.csv).
 
 ```bash
-python evaluate.py --images_dir path\to\images --labels_csv path\to\labels.csv --out_csv results\evaluation_results.csv --predictions_csv results\predictions.csv
+python evaluate.py --images_dir path/to/images --labels_csv path/to/labels.csv --out_csv results/evaluation_results.csv --predictions_csv results/predictions.csv
 ```
 
 `--plain` disables Rich formatting. Outputs:
@@ -135,7 +179,7 @@ python evaluate.py --images_dir path\to\images --labels_csv path\to\labels.csv -
 Needs face images in the folder (for benchmarking, any folder with a few `.jpg/.png` face photos is enough).
 
 ```bash
-python performance.py --images_dir dataset\images --n_runs 3 --out_csv results\performance.csv --plot results\performance_plot.png
+python performance.py --images_dir dataset/images --n_runs 3 --out_csv results/performance.csv --plot results/performance_plot.png
 ```
 
 `--no-plot` skips matplotlib. GPU time is measured when TensorFlow sees a GPU; otherwise the code falls back to a simple simulation.
@@ -180,7 +224,7 @@ You can run the TFLite timing directly:
 
 ```bash
 python tflite_export.py
-python tflite_inference.py --images_dir dataset\images --iterations 3 --out_csv results\tflite_performance.csv
+python tflite_inference.py --images_dir dataset/images --iterations 3 --out_csv results/tflite_performance.csv
 ```
 
 ## Important Separation: Evaluation vs Deployment Performance
@@ -188,6 +232,13 @@ python tflite_inference.py --images_dir dataset\images --iterations 3 --out_csv 
 - **Evaluation metrics (Accuracy/Precision/Recall/F1)** are computed using the **DeepFace model only** in `evaluate.py`.
 - **TFLite is not used** in `evaluate.py` and does not influence accuracy metrics.
 - TFLite is used only to provide a deployment/performance perspective.
+
+## FAQ (submission context)
+
+- **Do I need Colab steps in this README?**  
+  No. This README is intentionally local-first. Colab/GPU comparison details can be documented in the report.
+- **Should results be kept in the repository?**  
+  Yes, keeping selected result files/plots is useful as reproducibility evidence.
 
 ## Limitations
 
