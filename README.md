@@ -1,10 +1,13 @@
-# Age, Gender, and Emotion Recognition (local edge)
+# Edge AI Face Attribute Recognition (Age, Gender, Emotion)
 
-Python app that runs **entirely on your machine** (no cloud APIs): webcam or **single image** analysis for **age**, **gender**, and **dominant emotion**, using OpenCV for capture/detection and [DeepFace](https://github.com/serengil/deepface) pretrained models.
+This is my coursework project for running age, gender, and emotion inference fully on a local machine (no cloud API calls).  
+It supports webcam mode and single-image mode, using OpenCV for face handling and [DeepFace](https://github.com/serengil/deepface) pretrained models.
 
 **Stack:** Python **3.10–3.12** (recommended), OpenCV, DeepFace, TensorFlow, **Rich**, **matplotlib**, **scikit-learn** (confusion matrices / reports). On Windows, **Python 3.13+ / 3.14** usually cannot install TensorFlow yet (`No matching distribution found for tensorflow`) — install 3.12 alongside and use `py -3.12` for the venv.
 
-Dependencies are **not** hard coded inside the Python files; they live in [`requirements.txt`](requirements.txt) so anyone can reinstall the same environment.
+Dependencies are kept in [`requirements.txt`](requirements.txt), so the environment can be recreated easily.
+
+> Note: this README focuses on local execution and reproducibility. Any Colab-specific workflow details can stay in the project report.
 
 ## Reproducibility (fresh clone)
 
@@ -135,7 +138,7 @@ Needs face images in the folder (for benchmarking, any folder with a few `.jpg/.
 python performance.py --images_dir dataset\images --n_runs 3 --out_csv results\performance.csv --plot results\performance_plot.png
 ```
 
-`--no-plot` skips matplotlib. GPU time is measured when TensorFlow sees a GPU; otherwise the code falls back to a simple simulation. For the coursework GPU requirement, run the benchmark on a GPU runtime (e.g. Google Colab).
+`--no-plot` skips matplotlib. GPU time is measured when TensorFlow sees a GPU; otherwise the code falls back to a simple simulation.
 
 ## Project layout
 
@@ -156,7 +159,8 @@ results/          (created when you run eval / benchmark)
 
 ## Course report (DLBAIPEAI Task 2)
 
-Laptop as **edge device**; use evaluation CSV + benchmark CSV/plot for tables and figures; compare with a GPU run elsewhere if your report asks for it.
+Use the laptop as the **edge device** and reuse the generated CSV/plot files for report tables and figures.  
+If the assignment asks for a GPU comparison, that can be documented in the report section (separate from this repo setup guide).
 
 ## Edge AI Explanation
 

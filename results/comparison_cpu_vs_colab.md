@@ -1,10 +1,10 @@
 # CPU vs. Colab-GPU Comparison Report
 
-## Data Basis
+## Setup
 
 - CPU source: `C:\Users\danie\PycharmProjects\age-gender-emotion-edge\results\Results CPU PYCHARM`
 - GPU source: `C:\Users\danie\PycharmProjects\age-gender-emotion-edge\results\RESULTS GPU TF Google Collab`
-- Basis: identical test set with `20` images and the same label structure.
+- Same `20`-image test set and same label format were used for both runs.
 
 ## Quality Metrics
 
@@ -32,10 +32,10 @@
 | P90 inference time (s) | 1.6876 | 2.4798 | 0.7922 | 46.9402% |
 | Min/Max (s) | 0.5734 / 47.5424 | 0.2131 / 42.6945 | - | - |
 
-## Prediction Consistency at Image Level
+## Prediction Consistency (Image Level)
 
 - Prediction tuples `(pred_gender, pred_emotion, pred_age_group)` were compared for all `20` images.
-- Number of differing prediction tuples between CPU and GPU runs: **0**.
+- Number of different prediction tuples between CPU and GPU: **0**.
 
 ## Figures for Report/Appendix
 
@@ -43,7 +43,7 @@
 
 ![Quality parity panel](figures_cpu_vs_colab/01_quality_parity_panel.png)
 
-*Figure 1 uses a single clean quality matrix plus a compact delta summary box; this avoids redundant CPU/GPU overlap when all deltas are zero.*
+*Figure 1 shows one clean quality matrix and a short delta summary. Since all deltas are zero, separate CPU/GPU grids are not needed.*
 
 ### 2) Runtime Profile (Dumbbell Plot)
 
@@ -55,13 +55,13 @@
 
 ![Latency boxstrip](figures_cpu_vs_colab/03_latency_distribution_boxstrip.png)
 
-*Figure 3 visualizes distribution and spread of per-image inference times; the marked warm-up point is clearly above the steady-state range.*
+*Figure 3 shows the latency spread per image. The marked warm-up point is clearly above the steady-state range.*
 
 ### 4) Latency by Image Order
 
 ![Latency by order](figures_cpu_vs_colab/04_latency_by_image_order.png)
 
-*Figure 4 shows the time series by image index and highlights the initial warm-up effect in both runs.*
+*Figure 4 shows inference time by image index and highlights the first-image warm-up effect in both runs.*
 
 ### 5) Per-Image Runtime Delta (Lollipop)
 
@@ -69,8 +69,8 @@
 
 *Figure 5 shows `CPU - GPU` per image; positive values indicate a GPU speed advantage.*
 
-## Conclusion
+## Takeaway
 
 - Classification quality is identical across all reported scopes in this experiment.
 - Observed differences are primarily runtime-related and strongly influenced by warm-up behavior.
-- For robust reporting, end-to-end metrics and warm-up-aware metrics should be presented together.
+- For a fair report, show both end-to-end metrics and warm-up-aware metrics together.
