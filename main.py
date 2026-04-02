@@ -281,7 +281,7 @@ def run_webcam_loop(cascade) -> int:
 
 
 def _evaluation_path_defaults(project_root: Path) -> tuple[Path, Path]:
-    """Prefer coursework layout dataset/images + dataset/labels.csv; else data/."""
+    """Prefer dataset/images + dataset/labels.csv; else data/."""
     dataset_images = project_root / "dataset" / "images"
     data_dir = project_root / "data"
     if dataset_images.is_dir():
@@ -397,7 +397,7 @@ def run_rich_menu_loop(console: Console) -> int:
                     "it is read, not changed).\n\n"
                     "[bold]Results[/bold] land automatically in [cyan]results\\[/cyan]: "
                     "[bold]evaluation_results.csv[/bold] (full table), [bold]metrics.csv[/bold] (Acc/Prec/Rec/F1), "
-                    "[bold]confusion_*.csv[/bold], and [bold]predictions.csv[/bold] (same run, compact text per row — nice for the report, not strictly required). "
+                    "[bold]confusion_*.csv[/bold], and [bold]predictions.csv[/bold] (same run, compact text per row). "
                     "[italic]labels.csv[/italic] is only read (ground truth); it is not overwritten.",
                     title="[bold]Evaluation[/bold]",
                     border_style="blue",

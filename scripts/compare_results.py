@@ -175,7 +175,7 @@ def build_markdown(
         "- The first-image warm-up is very large in both runs, so 'mean over all images' can hide steady-state behavior."
     )
     lines.append(
-        "- For the report: mention both views: (1) all-image mean (end-to-end) and (2) warm-up-aware metrics (median or mean excluding first image)."
+        "- For interpretation, show both views: (1) all-image mean (end-to-end) and (2) warm-up-aware metrics (median or mean excluding first image)."
     )
     return "\n".join(lines) + "\n"
 

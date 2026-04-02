@@ -1,5 +1,5 @@
 """
-Squash model output + CSV labels into fixed buckets for the UI and the report.
+Squash model output + CSV labels into fixed buckets for UI and evaluation.
 Thresholds below are a bit arbitrary — tweak if your data looks off.
 """
 from __future__ import annotations

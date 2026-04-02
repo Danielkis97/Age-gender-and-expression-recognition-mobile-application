@@ -1,11 +1,11 @@
 # Edge AI Face Recognition (Age, Gender, Emotion)
 
-This is my coursework project for age, gender, and emotion recognition on a local machine (edge setup, no cloud API calls).
+This app runs age, gender, and emotion recognition on a local machine (edge setup, no cloud API calls).
 It supports webcam mode and single-image mode, using OpenCV + [DeepFace](https://github.com/serengil/deepface).
 
 Dependencies are in [`requirements.txt`](requirements.txt) so anyone can recreate the same environment.
 
-> Note: this README is local-first. Colab/GPU comparison details are documented in the project report.
+> Note: this README is local-first and focused on app setup/run.
 
 ## Python version (important)
 
@@ -37,8 +37,8 @@ winget install Python.Python.3.12 --accept-package-agreements --accept-source-ag
 **Windows (PowerShell)**
 
 ```powershell
-git clone https://github.com/Danielkis97/Age-gender-and-expression-recognition-mobile-application.git
-cd Age-gender-and-expression-recognition-mobile-application
+git clone https://github.com/Danielkis97/Age-Gender-and-Emotion-Recognition-Local-Edge-Application.git
+cd Age-Gender-and-Emotion-Recognition-Local-Edge-Application
 .\setup.ps1
 python main.py
 ```
@@ -46,8 +46,8 @@ python main.py
 **Linux / macOS**
 
 ```bash
-git clone https://github.com/Danielkis97/Age-gender-and-expression-recognition-mobile-application.git
-cd Age-gender-and-expression-recognition-mobile-application
+git clone https://github.com/Danielkis97/Age-Gender-and-Emotion-Recognition-Local-Edge-Application.git
+cd Age-Gender-and-Emotion-Recognition-Local-Edge-Application
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
@@ -106,7 +106,7 @@ pip install -r requirements.txt
 
 ## Privacy
 
-Use only data you are allowed to process. For coursework reports, prefer **anonymized** or stock images; avoid identifying real people without consent.
+Use only data you are allowed to process. Prefer **anonymized** or stock images; avoid identifying real people without consent.
 
 ## Install (short)
 
@@ -171,7 +171,7 @@ python evaluate.py --images_dir path/to/images --labels_csv path/to/labels.csv -
 `--plain` disables Rich formatting. Outputs:
 
 - **evaluation_results.csv** — full detail + timing per image.  
-- **predictions.csv** — compact view for reports (true vs predicted triplets, correctness flags).  
+- **predictions.csv** — compact view (true vs predicted triplets, correctness flags).  
 - **confusion_gender.csv**, **confusion_age.csv**, **confusion_emotion.csv** — 2×2 (or 2-class) confusion counts for sklearn-aligned metrics.
 
 ## Performance benchmark (CLI)
@@ -201,11 +201,6 @@ data/
 results/          (created when you run eval / benchmark)
 ```
 
-## Course report (DLBAIPEAI Task 2)
-
-Use the laptop as the **edge device** and reuse the generated CSV/plot files for report tables and figures.  
-If the assignment asks for a GPU comparison, that can be documented in the report section (separate from this repo setup guide).
-
 ## Edge AI Explanation
 
 In this project, the Edge device is your **local laptop/PC**. All inference for the app and the evaluation runs **on-device** (no cloud APIs).
@@ -233,10 +228,10 @@ python tflite_inference.py --images_dir dataset/images --iterations 3 --out_csv 
 - **TFLite is not used** in `evaluate.py` and does not influence accuracy metrics.
 - TFLite is used only to provide a deployment/performance perspective.
 
-## FAQ (submission context)
+## FAQ
 
 - **Do I need Colab steps in this README?**  
-  No. This README is intentionally local-first. Colab/GPU comparison details can be documented in the report.
+  No. This README is intentionally local-first.
 - **Should results be kept in the repository?**  
   Yes, keeping selected result files/plots is useful as reproducibility evidence.
 
@@ -244,4 +239,4 @@ python tflite_inference.py --images_dir dataset/images --iterations 3 --out_csv 
 
 - Lighting and image quality can impact face detection and recognition quality.
 - Bias: pretrained models may not be equally accurate across all demographics.
-- Small dataset: evaluation is based on a limited number of labeled images (20 as required by the task).
+- Small dataset: evaluation can be limited if you only run small image batches (default is 20 images).

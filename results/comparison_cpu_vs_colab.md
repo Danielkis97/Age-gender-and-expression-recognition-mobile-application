@@ -1,4 +1,4 @@
-# CPU vs. Colab-GPU Comparison Report
+# CPU vs. Colab-GPU Comparison Notes
 
 ## Setup
 
@@ -37,7 +37,7 @@
 - Prediction tuples `(pred_gender, pred_emotion, pred_age_group)` were compared for all `20` images.
 - Number of different prediction tuples between CPU and GPU: **0**.
 
-## Figures for Report/Appendix
+## Figures
 
 ### 1) Quality Overview (single-matrix view)
 
@@ -73,4 +73,4 @@
 
 - Classification quality is identical across all reported scopes in this experiment.
 - Observed differences are primarily runtime-related and strongly influenced by warm-up behavior.
-- For a fair report, show both end-to-end metrics and warm-up-aware metrics together.
+- For a fair comparison, show both end-to-end metrics and warm-up-aware metrics together.

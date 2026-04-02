@@ -177,7 +177,7 @@ def validate_dataset(
         if fn not in names:
             msgs.append(f"CSV references {fn} but file not in image set")
     if msgs:
-        # assignment wants 20 labelled imgs; we warn but don't hard-stop
+        # Dataset checks are strict, but we still show all warnings first.
         con.print()
         con.print(
             Panel(
@@ -518,7 +518,7 @@ def _save_evaluation_plots(
     plt.close(fig)
     saved_paths.append(metrics_plot_path)
 
-    # 2) One confusion heatmap per task for report screenshots.
+    # 2) One confusion heatmap per task for quick visual inspection.
     for task, cm_raw, labels in confusion_payload:
         cm = np.asarray(cm_raw, dtype=int)
         fig, ax = plt.subplots(figsize=(5.3, 4.6))
@@ -566,7 +566,7 @@ def run_evaluation(
         except Exception as e:
             con.print(f"[red]GPU required, but TensorFlow failed to import:[/red] {e}")
             con.print(
-                "[yellow]Colab hint:[/yellow] Runtime -> Change runtime type -> Hardware accelerator -> GPU"
+                "[yellow]Hint:[/yellow] enable a TensorFlow-compatible GPU runtime/environment."
             )
             return 1
 
@@ -574,7 +574,7 @@ def run_evaluation(
         if not gpus:
             con.print("[red]GPU required, but no TensorFlow GPU device is available.[/red]")
             con.print(
-                "[yellow]Colab hint:[/yellow] Runtime -> Change runtime type -> Hardware accelerator -> GPU, then restart runtime."
+                "[yellow]Hint:[/yellow] enable GPU in your runtime and restart the process."
             )
             return 1
         con.print(f"[green]GPU check passed.[/green] Found {len(gpus)} GPU device(s).")
@@ -605,7 +605,7 @@ def run_evaluation(
         con.print(
             Panel(
                 f"[bold]Expected {max_images} images but found {len(all_images)}.[/bold]\n"
-                "Provide a folder with exactly 20 labeled images for the task.",
+                "Provide a folder with exactly 20 labeled images (or set --max_images).",
                 title="[bold red]Dataset validation failed[/bold red]",
                 border_style="red",
             )
@@ -745,7 +745,7 @@ def run_evaluation(
 
     n = len(rows_out)
     if n == 0:
-        con.print("[yellow]No rows to report.[/yellow]")
+        con.print("[yellow]No rows to display.[/yellow]")
         return 0
 
     tasks = [
@@ -884,14 +884,14 @@ def run_evaluation(
         "(true vs predicted gender, emotion, age group, correct flags, timing).",
         f"[green]✓[/green] [bold]{predictions_csv.name}[/bold] — compact file: one row per image with "
         "[cyan]true[/cyan] and [cyan]pred[/cyan] as combined text (e.g. Male | Happy | Adult); "
-        "handy for reports; [dim]optional for grading if the full CSV + metrics are enough[/dim].",
+        "handy for quick review.",
         f"[green]✓[/green] [bold]{metrics_csv.name}[/bold] — accuracy / precision / recall / F1 summary.",
     ]
     for _, _, cpath, _ in tasks:
         written_lines.append(f"[green]✓[/green] [bold]{cpath.name}[/bold] — confusion matrix counts.")
     for p in plot_paths:
         written_lines.append(
-            f"[green]✓[/green] [bold]{p.name}[/bold] — report-ready chart image."
+            f"[green]✓[/green] [bold]{p.name}[/bold] — chart image."
         )
 
     if use_rich:
@@ -907,7 +907,7 @@ def run_evaluation(
         )
         con.print(
             "[dim]Tip:[/dim] [bold]evaluation_results.csv[/bold] + [bold]metrics.csv[/bold] "
-            "are usually enough for coursework; [bold]predictions.csv[/bold] is the same run in a shorter layout."
+            "are usually enough for most checks; [bold]predictions.csv[/bold] is the same run in a shorter layout."
         )
     else:
         times = [r["inference_seconds"] for r in rows_out]
