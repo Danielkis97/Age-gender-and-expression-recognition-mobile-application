@@ -1,0 +1,3 @@
+filename,true_gender,true_emotion,true_age_group
+sample_01.jpg,Male,Happy,Adult
+sample_02.jpg,Female,Sad,Elderly
