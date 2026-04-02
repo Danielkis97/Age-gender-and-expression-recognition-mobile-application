@@ -1,4 +1,4 @@
-# Edge AI Face Attribute Recognition (Age, Gender, Emotion)
+# Edge AI Face Recognition (Age, Gender, Emotion)
 
 This is my coursework project for running age, gender, and emotion inference fully on a local machine (no cloud API calls).  
 It supports webcam mode and single-image mode, using OpenCV for face handling and [DeepFace](https://github.com/serengil/deepface) pretrained models.
