@@ -4,7 +4,7 @@ Python app that runs **entirely on your machine** (no cloud APIs): webcam or **s
 
 **Stack:** Python **3.10–3.12** (recommended), OpenCV, DeepFace, TensorFlow, **Rich**, **matplotlib**, **scikit-learn** (confusion matrices / reports). On Windows, **Python 3.13+ / 3.14** usually cannot install TensorFlow yet (`No matching distribution found for tensorflow`) — install 3.12 alongside and use `py -3.12` for the venv.
 
-Dependencies are **not** hard-coded inside the Python files; they live in [`requirements.txt`](requirements.txt) so anyone can reinstall the same environment.
+Dependencies are **not** hard coded inside the Python files; they live in [`requirements.txt`](requirements.txt) so anyone can reinstall the same environment.
 
 ## Reproducibility (fresh clone)
 
@@ -80,7 +80,7 @@ Same as **Reproducibility** above. After `pip install -r requirements.txt`, opti
 python evaluate.py --images_dir dataset/images --labels_csv dataset/labels.csv
 ```
 
-The first run of DeepFace may **download model weights** (one-time). `tf-keras` is needed on many Windows setups for DeepFace’s RetinaFace stack.
+The first run of DeepFace may **download model weights** (one time). `tf-keras` is needed on many Windows setups for DeepFace’s RetinaFace stack.
 
 ## Run — interactive menu (default)
 
@@ -90,9 +90,9 @@ python main.py
 
 **Rich menu**
 
-1. **Webcam** — real-time (CLAHE on face crops before DeepFace; predictions every 10 frames, cached).  
+1. **Webcam** — realtime (CLAHE on face crops before DeepFace; predictions every 10 frames, cached).  
 2. **Single image** — file picker or typed path, OpenCV overlay.  
-3. **Evaluation** — folder + labels CSV (up to 20 images); validates count/labels (warns if not 20 or missing fields); progress bar; summary + per-image tables; **sklearn** confusion matrices + `classification_report` for **Male/Female**, **Adult/Elderly** (age ≥ 50), **Happy/Sad** (non-happy → Sad); writes `evaluation_results.csv`, `predictions.csv`, `confusion_gender.csv`, `confusion_age.csv`, `confusion_emotion.csv`.  
+3. **Evaluation** — folder + labels CSV (up to 20 images); validates count/labels (warns if not 20 or missing fields); progress bar; summary + per image tables; **sklearn** confusion matrices + `classification_report` for **Male/Female**, **Adult/Elderly** (age ≥ 50), **Happy/Sad** (non-happy → Sad); writes `evaluation_results.csv`, `predictions.csv`, `confusion_gender.csv`, `confusion_age.csv`, `confusion_emotion.csv`.  
 4. **Run Performance Benchmark** — compares CPU vs GPU vs Edge and also includes a TFLite deployment demo row. Saves a Rich table, `results/performance.csv`, and (if matplotlib is installed) `results/performance_plot.png`.  
 5. **Exit**
 
