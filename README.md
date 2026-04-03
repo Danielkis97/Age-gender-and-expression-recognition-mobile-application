@@ -13,37 +13,7 @@ Inference runs on the local machine (edge scenario) with no cloud API dependency
 
 ## Architecture Preview
 
-```mermaid
-classDiagram
-direction LR
-
-class Main["main.py"]
-class Evaluate["evaluate.py"]
-class Benchmark["performance.py"]
-class Export["tflite_export.py"]
-class TFLite["tflite_inference.py"]
-class Utils["utils/*"]
-class Dataset["dataset/images + labels.csv"]
-class Model["models/model.tflite"]
-class Results["results/*"]
-
-Main --> Utils : uses
-Main --> Dataset : reads
-Main --> Results : writes
-
-Evaluate --> Utils : uses
-Evaluate --> Dataset : reads
-Evaluate --> Results : writes metrics
-
-Benchmark --> Dataset : reads
-Benchmark --> Results : writes timings
-Benchmark --> TFLite : calls
-
-Export --> Model : creates
-TFLite --> Model : loads
-TFLite --> Dataset : reads face crops
-TFLite --> Results : writes timings
-```
+[![Architecture preview](docs/architecture_preview.png)](docs/architecture_preview.png)
 
 PlantUML source for the same high-level structure is available in `docs/architecture.puml`.
 
