@@ -169,6 +169,12 @@ Expected label CSV columns:
 
 Template: [data/labels_example.csv](data/labels_example.csv)
 
+Ground-truth note:
+
+- The repository includes a manually labeled 20-image set in `dataset/labels.csv`
+- If you use your own images or another dataset, create matching ground-truth labels first
+- Without ground-truth labels, quality metrics (accuracy/precision/recall/F1) cannot be computed reliably
+
 Run evaluation:
 
 ```bash
@@ -217,6 +223,10 @@ Important separation:
 
 - Evaluation metrics (accuracy/precision/recall/F1) are computed from the DeepFace pipeline in `evaluate.py`
 - TFLite timings are deployment-oriented and independent from evaluation quality scores
+- `utils/label_mapping.py` normalizes both model outputs and CSV labels into the canonical buckets used in this project:
+  - gender: `Male` / `Female`
+  - emotion: `Happy` / `Sad`
+  - age group: `Adult` / `Elderly` (threshold at age `50`)
 
 ## Quick Validation Steps
 
