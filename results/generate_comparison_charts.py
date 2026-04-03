@@ -72,68 +72,70 @@ def _aligned_table(cpu_eval: pd.DataFrame, gpu_eval: pd.DataFrame, mobile_eval: 
 def save_quality_parity_panel(cpu_metrics: pd.DataFrame, gpu_metrics: pd.DataFrame, mobile_metrics: pd.DataFrame, output_path: Path) -> None:
     cpu = cpu_metrics.set_index("scope").loc[SCOPE_ORDER, METRIC_ORDER]
     gpu = gpu_metrics.set_index("scope").loc[SCOPE_ORDER, METRIC_ORDER]
-    mobile = mobile_metrics.set_index("scope").loc[SCOPE_ORDER, METRIC_ORDER].apply(pd.to_numeric, errors="coerce")
 
-    col_labels = [f"{scope[:3].title()}-{metric.title()[:4]}" for scope in SCOPE_ORDER for metric in METRIC_ORDER]
-    matrix = np.vstack(
-        [
-            cpu.to_numpy().reshape(1, -1),
-            gpu.to_numpy().reshape(1, -1),
-            mobile.to_numpy().reshape(1, -1),
-        ]
-    )
-    masked = np.ma.masked_invalid(matrix)
-    cmap = plt.cm.YlGnBu.copy()
-    cmap.set_bad("#e5e7eb")
+    delta = gpu - cpu
+    abs_delta = np.abs(delta.to_numpy())
+    max_abs = float(abs_delta.max())
+    mean_abs = float(abs_delta.mean())
+    same_cells = int(np.sum(abs_delta < 1e-12))
+    total_cells = int(abs_delta.size)
 
-    cpu_gpu_delta = (gpu - cpu).to_numpy()
-    max_abs = float(np.nanmax(np.abs(cpu_gpu_delta)))
-    same_cells = int(np.sum(np.abs(cpu_gpu_delta) < 1e-12))
-    total_cells = int(cpu_gpu_delta.size)
+    values = cpu if np.allclose(cpu.to_numpy(), gpu.to_numpy(), atol=1e-12) else gpu
 
-    fig = plt.figure(figsize=(15.0, 5.6), constrained_layout=True)
-    grid = fig.add_gridspec(1, 2, width_ratios=[3.2, 1.15], wspace=0.12)
-    ax = fig.add_subplot(grid[0, 0])
+    fig = plt.figure(figsize=(11.2, 5.0), constrained_layout=True)
+    grid = fig.add_gridspec(1, 2, width_ratios=[1.9, 1.05], wspace=0.15)
+    ax_matrix = fig.add_subplot(grid[0, 0])
     ax_info = fig.add_subplot(grid[0, 1])
 
-    image = ax.imshow(masked, cmap=cmap, aspect="auto", vmin=0.55, vmax=0.90)
-    ax.set_title("Quality metrics matrix (CPU / Colab-GPU / Mobile Edge)", fontsize=12.6, weight="bold")
-    ax.set_xticks(np.arange(len(col_labels)))
-    ax.set_xticklabels(col_labels, rotation=45, ha="right", fontsize=8.8)
-    ax.set_yticks(np.arange(3))
-    ax.set_yticklabels(["CPU", "Colab-GPU", "Mobile Edge"], fontsize=10.2)
+    image = ax_matrix.imshow(values.to_numpy(), cmap="YlGnBu", aspect="auto", vmin=0.55, vmax=0.90)
+    ax_matrix.set_title("Quality metrics (CPU vs Colab-GPU)", fontsize=12.5, weight="bold")
+    ax_matrix.set_xticks(np.arange(len(values.columns)))
+    ax_matrix.set_xticklabels([column.title() for column in values.columns], fontsize=10)
+    ax_matrix.set_yticks(np.arange(len(values.index)))
+    ax_matrix.set_yticklabels([index.title() for index in values.index], fontsize=10)
 
-    for r in range(masked.shape[0]):
-        for c in range(masked.shape[1]):
-            if np.ma.is_masked(masked[r, c]):
-                ax.text(c, r, "N/A", ha="center", va="center", fontsize=8, color="#6b7280")
-            else:
-                val = float(masked[r, c])
-                ax.text(c, r, f"{val:.3f}", ha="center", va="center", fontsize=8.2, color="#0f172a")
+    vmin, vmax = 0.55, 0.90
+    for row in range(values.shape[0]):
+        for col in range(values.shape[1]):
+            value = float(values.iloc[row, col])
+            normalized = (value - vmin) / (vmax - vmin)
+            text_color = "#ffffff" if normalized >= 0.58 else "#1f2933"
+            text_weight = "semibold" if normalized >= 0.58 else "normal"
+            ax_matrix.text(
+                col,
+                row,
+                f"{value:.3f}",
+                ha="center",
+                va="center",
+                fontsize=9,
+                color=text_color,
+                fontweight=text_weight,
+            )
 
-    fig.colorbar(image, ax=ax, fraction=0.03, pad=0.02, label="Metric value")
+    fig.colorbar(image, ax=ax_matrix, fraction=0.046, pad=0.03, label="Metric value")
 
     ax_info.axis("off")
-    summary = (
-        "Quality status\n"
-        f"- CPU vs GPU max |delta|: {max_abs:.4f}\n"
-        f"- identical CPU/GPU cells: {same_cells}/{total_cells}\n"
-        "- Mobile Edge (browser TFLite):\n"
-        "  timing-only run for this demo path\n"
-        "  => quality cells intentionally N/A"
+    summary_text = (
+        "Delta summary (GPU - CPU)\n"
+        f"- max |delta|: {max_abs:.4f}\n"
+        f"- mean |delta|: {mean_abs:.4f}\n"
+        f"- identical cells: {same_cells}/{total_cells}\n\n"
+        "Mobile Edge quality is intentionally\n"
+        "excluded here because the browser run\n"
+        "is timing-only in this demo path."
     )
     ax_info.text(
-        0.03,
-        0.95,
-        summary,
+        0.02,
+        0.96,
+        summary_text,
         va="top",
         ha="left",
-        fontsize=10.1,
+        fontsize=10.2,
         color="#1f2933",
         bbox={"boxstyle": "round,pad=0.45", "facecolor": "#f3f6fa", "edgecolor": "#d0d7de"},
     )
 
-    fig.suptitle("Quality overview (with Mobile Edge availability)", fontsize=15, weight="bold")
+    fig.suptitle("Quality overview", fontsize=15, weight="bold")
     fig.savefig(output_path, dpi=220, bbox_inches="tight")
     plt.close(fig)
 
@@ -337,6 +339,20 @@ def save_image_delta_lollipop(cpu_eval: pd.DataFrame, gpu_eval: pd.DataFrame, mo
     ax2.set_xlabel("Delta seconds")
     ax2.grid(axis="x", alpha=0.25)
 
+    # Add small per-bar labels so each delta is readable.
+    gpu_vals = merged["delta_cpu_minus_gpu"].to_numpy(dtype=float)
+    mob_vals = merged["delta_cpu_minus_mobile"].to_numpy(dtype=float)
+    xpad_gpu = (np.nanmax(gpu_vals) - np.nanmin(gpu_vals)) * 0.015 if len(gpu_vals) else 0.03
+    xpad_mob = (np.nanmax(mob_vals) - np.nanmin(mob_vals)) * 0.010 if len(mob_vals) else 0.03
+
+    for yi, v in enumerate(gpu_vals):
+        ha = "left" if v >= 0 else "right"
+        ax1.text(v + (xpad_gpu if v >= 0 else -xpad_gpu), yi, f"{v:+.2f}s", va="center", ha=ha, fontsize=7.2, color="#374151")
+
+    for yi, v in enumerate(mob_vals):
+        ha = "left" if v >= 0 else "right"
+        ax2.text(v + (xpad_mob if v >= 0 else -xpad_mob), yi, f"{v:+.2f}s", va="center", ha=ha, fontsize=7.2, color="#374151")
+
     ax1.set_yticks(y)
     ax1.set_yticklabels(merged["image_id"], fontsize=8.7)
     ax1.invert_yaxis()
@@ -368,39 +384,57 @@ def save_three_way_speedup_panel(
     mob_p90 = _timing_summary(mobile_eval["inference_seconds"])["P90"]
 
     categories = ["Mean", "Median", "P90"]
-    speedup_gpu = [cpu_mean / gpu_mean, cpu_med / gpu_med, cpu_p90 / gpu_p90]
-    speedup_mobile = [cpu_mean / mob_mean, cpu_med / mob_med, cpu_p90 / mob_p90]
+    cpu_ms = np.array([cpu_mean * 1000.0, cpu_med * 1000.0, cpu_p90 * 1000.0], dtype=float)
+    gpu_ms = np.array([gpu_mean * 1000.0, gpu_med * 1000.0, gpu_p90 * 1000.0], dtype=float)
+    mob_ms = np.array([mob_mean * 1000.0, mob_med * 1000.0, mob_p90 * 1000.0], dtype=float)
 
     x = np.arange(len(categories))
-    width = 0.35
-    fig, ax = plt.subplots(figsize=(8.8, 5.0))
-    ax.bar(x - width / 2, speedup_gpu, width, label="Colab-GPU vs CPU", color="#ff7f0e")
-    ax.bar(x + width / 2, speedup_mobile, width, label="Mobile Edge vs CPU", color="#2ca02c")
+    width = 0.24
+    fig, ax = plt.subplots(figsize=(10.6, 5.4))
+    bars_cpu = ax.bar(x - width, cpu_ms, width, label="CPU", color="#1f77b4", alpha=0.92)
+    bars_gpu = ax.bar(x, gpu_ms, width, label="Colab-GPU", color="#ff7f0e", alpha=0.92)
+    bars_mob = ax.bar(x + width, mob_ms, width, label="Mobile Edge", color="#2ca02c", alpha=0.92)
+
     ax.set_xticks(x)
     ax.set_xticklabels(categories)
-    ax.set_ylabel("Speedup factor (CPU / target)")
-    ax.set_title("Three-way speedup overview")
-    ax.grid(axis="y", alpha=0.25)
-    ax.legend()
+    ax.set_yscale("log")
+    ax.set_ylabel("Milliseconds (log scale)")
+    ax.set_title("Three-way timing snapshot (values shown)", fontsize=13.5, weight="bold")
+    ax.grid(axis="y", alpha=0.25, which="both")
+    ax.legend(loc="upper right")
+
+    def _add_labels(bars):
+        for b in bars:
+            h = float(b.get_height())
+            ax.text(
+                b.get_x() + b.get_width() / 2,
+                h * 1.08,
+                f"{h:.1f} ms",
+                ha="center",
+                va="bottom",
+                fontsize=8.0,
+                color="#374151",
+                rotation=0,
+            )
+
+    _add_labels(bars_cpu)
+    _add_labels(bars_gpu)
+    _add_labels(bars_mob)
     fig.tight_layout()
     fig.savefig(output_path, dpi=220)
     plt.close(fig)
 
 
-def main() -> None:
-    plt.style.use("seaborn-v0_8-whitegrid")
-    repo_root = Path(__file__).resolve().parents[1]
-    output_dir = repo_root / "results" / "figures_cpu_vs_colab"
+def _generate_suite(
+    output_dir: Path,
+    cpu_metrics: pd.DataFrame,
+    gpu_metrics: pd.DataFrame,
+    mobile_metrics: pd.DataFrame,
+    cpu_eval: pd.DataFrame,
+    gpu_eval: pd.DataFrame,
+    mobile_eval: pd.DataFrame,
+) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
-
-    data = load_data(repo_root)
-    cpu_metrics = data["cpu_metrics"]
-    gpu_metrics = data["gpu_metrics"]
-    mobile_metrics = data["mobile_metrics"]
-    cpu_eval = data["cpu_eval"]
-    gpu_eval = data["gpu_eval"]
-    mobile_eval = data["mobile_eval"]
-
     save_quality_parity_panel(cpu_metrics, gpu_metrics, mobile_metrics, output_dir / "01_quality_parity_panel.png")
     save_timing_dumbbell(
         cpu_metrics,
@@ -423,7 +457,26 @@ def main() -> None:
         mobile_eval,
         output_dir / "06_three_way_speedup_panel.png",
     )
-    print(f"Saved charts in: {output_dir}")
+
+
+def main() -> None:
+    plt.style.use("seaborn-v0_8-whitegrid")
+    repo_root = Path(__file__).resolve().parents[1]
+
+    data = load_data(repo_root)
+    cpu_metrics = data["cpu_metrics"]
+    gpu_metrics = data["gpu_metrics"]
+    mobile_metrics = data["mobile_metrics"]
+    cpu_eval = data["cpu_eval"]
+    gpu_eval = data["gpu_eval"]
+    mobile_eval = data["mobile_eval"]
+
+    out_cpu_gpu = repo_root / "results" / "figures_cpu_vs_colab"
+    out_three_way = repo_root / "results" / "figures_three_way"
+    _generate_suite(out_cpu_gpu, cpu_metrics, gpu_metrics, mobile_metrics, cpu_eval, gpu_eval, mobile_eval)
+    _generate_suite(out_three_way, cpu_metrics, gpu_metrics, mobile_metrics, cpu_eval, gpu_eval, mobile_eval)
+    print(f"Saved charts in: {out_cpu_gpu}")
+    print(f"Saved charts in: {out_three_way}")
 
 
 if __name__ == "__main__":

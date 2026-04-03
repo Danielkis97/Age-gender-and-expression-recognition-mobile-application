@@ -281,7 +281,9 @@ Notes:
 │   ├── images/
 │   └── labels.csv
 ├── docs/
-│   └── architecture.puml
+│   ├── architecture.puml
+│   ├── architecture_preview.png
+│   └── appendix_gantt_project_progress.md
 ├── models/
 │   └── model.tflite
 ├── results/
@@ -373,7 +375,7 @@ High-level outcome:
 - CPU and Colab-GPU quality metrics were identical across the reported scopes
 - Mean inference time per image: `3477.40 ms` (CPU), `3446.70 ms` (Colab-GPU), `3.60 ms` (Mobile Edge)
 - Median inference time: `731.17 ms` (CPU), `551.69 ms` (Colab-GPU), `3.50 ms` (Mobile Edge)
-- Mobile Edge in this demo path is timing-focused; quality fields are marked `N/A`
+- Mobile Edge is timing-focused in this demo path; quality comparison is shown for CPU/GPU only
 - Warm-up and image-level latency variation remain clearly visible in per-image charts
 
 The comparison charts can be regenerated with:
@@ -382,6 +384,13 @@ The comparison charts can be regenerated with:
 python results/build_mobile_result_bundle.py --mobile_csv "results/Results mobile metrics/mobile_browser_metrics.csv" --out_dir "results/Results mobile metrics"
 python results/generate_comparison_charts.py
 ```
+
+### Scope and practical limitation (mobile path)
+
+- The iPhone run is real on-device browser inference and is valid for latency/throughput benchmarking.
+- In this repository, full quality metrics (accuracy/precision/recall/F1) are produced by the DeepFace desktop pipeline (CPU/GPU runs).
+- Achieving identical quality outputs directly on mobile browser would require browser-compatible Face+Age+Gender+Emotion models, plus re-validation against ground truth and likely calibration/retraining.
+- Current trade-off: fast and reproducible mobile timing on-device, but limited comparability for quality metrics.
 
 ### Comparison Figures
 
@@ -405,9 +414,25 @@ python results/generate_comparison_charts.py
 
 ![Image delta lollipop](results/figures_cpu_vs_colab/05_image_delta_lollipop.png)
 
-#### 6) Three-way speedup overview
+#### 6) Three-way timing snapshot (values shown)
 
 ![Three-way speedup panel](results/figures_cpu_vs_colab/06_three_way_speedup_panel.png)
+
+### Additional three-way figure bundle
+
+The same comparison suite is also exported to `results/figures_three_way/` and includes:
+
+- `01_quality_parity_panel.png`
+- `01_timing_kpis_three_way.png`
+- `02_timing_dumbbell_clean.png`
+- `03_latency_distribution_boxstrip.png`
+- `04_latency_by_image_order.png`
+- `05_image_delta_lollipop.png`
+- `06_three_way_speedup_panel.png`
+
+#### 7) Annotated three-way timing KPIs
+
+![Three-way timing KPIs](results/figures_three_way/01_timing_kpis_three_way.png)
 
 ## License
 
@@ -422,3 +447,7 @@ This project is licensed under the [MIT License](LICENSE).
 ## Development Environment
 
 The code for this project was developed using PyCharm, which offers a powerful IDE for Python development.
+
+## Appendix
+
+- Project progress Gantt chart: [docs/appendix_gantt_project_progress.md](docs/appendix_gantt_project_progress.md)

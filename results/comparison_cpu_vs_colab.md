@@ -9,14 +9,14 @@
 
 ## Quality Metrics
 
-| Scope | Accuracy CPU | Accuracy GPU | Accuracy Mobile | Precision CPU | Precision GPU | Precision Mobile | Recall CPU | Recall GPU | Recall Mobile | F1 CPU | F1 GPU | F1 Mobile |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| overall | 0.7833 | 0.7833 | N/A | 0.8441 | 0.8441 | N/A | 0.7833 | 0.7833 | N/A | 0.7658 | 0.7658 | N/A |
-| gender | 0.8500 | 0.8500 | N/A | 0.8846 | 0.8846 | N/A | 0.8500 | 0.8500 | N/A | 0.8465 | 0.8465 | N/A |
-| emotion | 0.8500 | 0.8500 | N/A | 0.8535 | 0.8535 | N/A | 0.8500 | 0.8500 | N/A | 0.8496 | 0.8496 | N/A |
-| age | 0.6500 | 0.6500 | N/A | 0.7941 | 0.7941 | N/A | 0.6500 | 0.6500 | N/A | 0.6011 | 0.6011 | N/A |
+| Scope | Accuracy CPU | Accuracy GPU | Delta | Precision CPU | Precision GPU | Recall CPU | Recall GPU | F1 CPU | F1 GPU |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| overall | 0.7833 | 0.7833 | 0.0000 | 0.8441 | 0.8441 | 0.7833 | 0.7833 | 0.7658 | 0.7658 |
+| gender | 0.8500 | 0.8500 | 0.0000 | 0.8846 | 0.8846 | 0.8500 | 0.8500 | 0.8465 | 0.8465 |
+| emotion | 0.8500 | 0.8500 | 0.0000 | 0.8535 | 0.8535 | 0.8500 | 0.8500 | 0.8496 | 0.8496 |
+| age | 0.6500 | 0.6500 | 0.0000 | 0.7941 | 0.7941 | 0.6500 | 0.6500 | 0.6011 | 0.6011 |
 
-Mobile quality fields are `N/A` in this demo path because the browser TFLite run is timing-focused.
+Quality is shown for CPU/GPU only (directly comparable DeepFace outputs).
 
 ## Runtime Metrics
 
@@ -50,7 +50,7 @@ Mobile quality fields are `N/A` in this demo path because the browser TFLite run
 
 ![Per-image delta lollipop](figures_cpu_vs_colab/05_image_delta_lollipop.png)
 
-### 6) Additional three-way speedup view
+### 6) Additional three-way timing snapshot (with values)
 
 ![Three-way speedup panel](figures_cpu_vs_colab/06_three_way_speedup_panel.png)
 

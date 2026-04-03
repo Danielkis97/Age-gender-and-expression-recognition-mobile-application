@@ -1,5 +1,0 @@
-﻿device;time_per_image_s;total_runtime_s;std_s;speedup_vs_cpu;notes
-CPU;0.572149;27.463135;0.075037;1.0;Local execution (CPU)
-GPU;0.190716;9.154378;0.025012;3.0;GPU simulated (cpu/3)
-Edge;0.572149;27.463135;0.075037;1.0;Edge device (same CPU, CPU-based edge execution)
-TFLite;9.3e-05;0.004479;2.3e-05;6131.669454;Measured mobile optimization (TFLite demo model, 16 images used)
