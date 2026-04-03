@@ -15,6 +15,12 @@ Inference runs on the local machine (edge scenario) with no cloud API dependency
 
 [![Architecture preview](docs/architecture_preview.png)](docs/architecture_preview.png)
 
+Diagram scope:
+
+- `evaluate.py` uses `dataset/labels.csv` as ground truth for metrics
+- `performance.py` includes the TFLite timing path via `tflite_inference.py`
+- if `models/model.tflite` is missing, the flow can generate it via `tflite_export.py`
+
 PlantUML source for the same high-level structure is available in `docs/architecture.puml`.
 
 The repository includes:
