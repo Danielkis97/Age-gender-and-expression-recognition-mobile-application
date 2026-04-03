@@ -1,0 +1,5 @@
+﻿scope;accuracy;precision;recall;f1;mean_inference_time_s;std_inference_time_s;total_runtime_s;n_images
+overall;;;;;0.0036;0.0009;0.0710;20
+gender;;;;;0.0036;0.0009;0.0710;20
+emotion;;;;;0.0036;0.0009;0.0710;20
+age;;;;;0.0036;0.0009;0.0710;20

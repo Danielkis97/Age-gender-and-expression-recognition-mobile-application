@@ -1,0 +1,21 @@
+﻿filename;true_gender_emotion_agegroup;pred_gender_emotion_agegroup;pred_age_numeric;all_correct;correct_gender;correct_emotion;correct_age_group;face_found;inference_seconds
+Image_01_Elder Male sad.jpg;Male / Sad / Elderly;;;;;;;1;0.0050
+Image_02_Elder Male sad.png;Male / Sad / Elderly;;;;;;;1;0.0060
+Image_03_Elder Male happy.jpeg;Male / Happy / Elderly;;;;;;;1;0.0040
+Image_04_Elder Male sad.jpg;Male / Sad / Elderly;;;;;;;1;0.0030
+Image_05_Elder Male happy.jpg;Male / Happy / Elderly;;;;;;;1;0.0020
+Image_06 Elder Female happy.jpg;Female / Happy / Elderly;;;;;;;1;0.0030
+Image_07 Elder Female happy.jpg;Female / Happy / Elderly;;;;;;;1;0.0030
+Image_08 Elder Female happy.jpeg;Female / Happy / Elderly;;;;;;;1;0.0020
+Image_09 Elder Female sad.jpg;Female / Sad / Elderly;;;;;;;1;0.0030
+Image_10 Elder Female sad.jpg;Female / Sad / Elderly;;;;;;;1;0.0030
+Image_11 Adult Male happy.jpg;Male / Happy / Adult;;;;;;;1;0.0030
+Image_12 Adult Male happy.jpg;Male / Happy / Adult;;;;;;;1;0.0040
+Image_13 Adult Male happy.jpg;Male / Happy / Adult;;;;;;;1;0.0030
+Image_14 Adult Male sad.jpg;Male / Sad / Adult;;;;;;;1;0.0030
+Image_15 Adult Male sad.jpg;Male / Sad / Adult;;;;;;;1;0.0040
+Image_16 Adult Female happy.jpg;Female / Happy / Adult;;;;;;;1;0.0040
+Image_17 Adult Female happy.jpg;Female / Happy / Adult;;;;;;;1;0.0040
+Image_18 Adult Female sad.jpg;Female / Sad / Adult;;;;;;;1;0.0040
+Image_19 Adult Female sad.jpg;Female / Sad / Adult;;;;;;;1;0.0040
+Image_20 Adult Female sad.jpg;Female / Sad / Adult;;;;;;;1;0.0040

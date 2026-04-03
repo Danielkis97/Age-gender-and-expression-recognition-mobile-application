@@ -1,0 +1,6 @@
+Mobile result bundle generated from browser on-device timing run.
+Source run_id: run_1775215150518
+
+Timing metrics are directly measured on iPhone (latency_ms).
+Quality metrics (accuracy/precision/recall/f1, predictions) are not available
+for this mobile TFLite demo model and are intentionally left blank.

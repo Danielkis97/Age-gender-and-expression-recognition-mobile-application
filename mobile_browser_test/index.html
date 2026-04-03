@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mobile Browser TFLite Benchmark</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --ok: #10b981;
+      --warn: #f59e0b;
+      --err: #ef4444;
+      --btn: #2563eb;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.35;
+    }
+    .wrap {
+      max-width: 840px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    h1, h2 { margin: 0 0 10px; }
+    h1 { font-size: 1.25rem; }
+    h2 { font-size: 1.05rem; }
+    p { margin: 8px 0; color: var(--muted); }
+    label { display: block; margin: 8px 0 4px; font-size: 0.92rem; }
+    input, button, select {
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #0b1220;
+      color: var(--text);
+      padding: 9px 10px;
+      font-size: 0.95rem;
+    }
+    button {
+      background: var(--btn);
+      border: none;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    button.secondary {
+      background: #374151;
+    }
+    button:disabled {
+      opacity: 0.6;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      word-break: break-word;
+    }
+    .status-ok { color: var(--ok); }
+    .status-warn { color: var(--warn); }
+    .status-err { color: var(--err); }
+    .small { font-size: 0.87rem; color: var(--muted); }
+    .hidden { display: none; }
+    #preview {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 10px;
+      border: 1px solid #334155;
+    }
+    @media (max-width: 640px) {
+      .row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Mobile Browser TFLite Benchmark</h1>
+      <p>
+        Run inference directly on your iPhone browser and send latency samples to your Windows PC.
+        This is on-device browser inference (not a native iOS app).
+      </p>
+      <p id="serverStatus" class="small mono">Server status: checking...</p>
+    </div>
+
+    <div class="card">
+      <h2>Model Setup</h2>
+      <label for="modelUrl">Model URL</label>
+      <input id="modelUrl" value="/models/model.tflite" />
+      <label for="deviceLabel">Device label (saved to CSV)</label>
+      <input id="deviceLabel" value="iphone-safari" />
+      <button id="loadModelBtn">Load TFLite Model</button>
+      <p id="modelStatus" class="small">Model not loaded.</p>
+      <p id="modelMeta" class="small mono">Input shape: unknown</p>
+    </div>
+
+    <div class="card">
+      <h2>Input</h2>
+      <p id="inputInfo" class="small">
+        Fixed mode: first 20 files from <code>dataset/images</code> (automatic).
+      </p>
+      <p id="datasetInfo" class="small mono">Dataset status: checking...</p>
+    </div>
+
+    <div class="card">
+      <h2>Benchmark</h2>
+      <p class="small">Fixed run config: <b>1 pass</b> over 20 images, warm-up <b>2x</b> on first image.</p>
+      <button id="runBtn" disabled>Run Benchmark and Upload Metrics</button>
+      <button id="sendPingBtn" class="secondary">Send One Test Row</button>
+      <p id="runStatus" class="small">Waiting...</p>
+      <pre id="summary" class="mono small"></pre>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-tflite/dist/tf-tflite.min.js"></script>
+  <script>
+    const modelUrlInput = document.getElementById("modelUrl");
+    const deviceLabelInput = document.getElementById("deviceLabel");
+    const modelStatus = document.getElementById("modelStatus");
+    const runStatus = document.getElementById("runStatus");
+    const summary = document.getElementById("summary");
+    const serverStatus = document.getElementById("serverStatus");
+    const inputInfo = document.getElementById("inputInfo");
+    const datasetInfo = document.getElementById("datasetInfo");
+    const runBtn = document.getElementById("runBtn");
+    const loadModelBtn = document.getElementById("loadModelBtn");
+    const sendPingBtn = document.getElementById("sendPingBtn");
+    const modelMeta = document.getElementById("modelMeta");
+
+    const FIXED_ITERATIONS = 1;
+    const FIXED_WARMUP_FIRST_IMAGE = 2;
+    const DATASET_LIMIT = 20;
+    const FIXED_INPUT_SOURCE = "dataset_images";
+
+    let tfliteModel = null;
+    let datasetImages = [];
+    let INPUT_W = 64;
+    let INPUT_H = 64;
+    let INPUT_C = 3;
+    let INPUT_DTYPE = "float32";
+
+    function setText(el, text, cls = "") {
+      el.textContent = text;
+      el.className = cls;
+    }
+
+    function percentile(sorted, q) {
+      if (!sorted.length) return NaN;
+      const pos = (sorted.length - 1) * q;
+      const base = Math.floor(pos);
+      const rest = pos - base;
+      if (sorted[base + 1] !== undefined) {
+        return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
+      }
+      return sorted[base];
+    }
+
+    function normalizeInputTensor(tensor) {
+      if (INPUT_DTYPE.includes("uint8")) {
+        const clipped = tensor.clipByValue(0, 255);
+        const converted = clipped.cast("int32");
+        clipped.dispose();
+        tensor.dispose();
+        return converted;
+      }
+      const converted = tensor.cast("float32");
+      tensor.dispose();
+      return converted;
+    }
+
+    async function checkServer() {
+      try {
+        const res = await fetch("/api/status");
+        const js = await res.json();
+        setText(serverStatus, `Server status: ok | CSV: ${js.csv_path}`, "small mono status-ok");
+        if (js.model_info && js.model_info.available && Array.isArray(js.model_info.shape) && js.model_info.shape.length === 4) {
+          INPUT_H = Number(js.model_info.shape[1]) || 64;
+          INPUT_W = Number(js.model_info.shape[2]) || 64;
+          INPUT_C = Number(js.model_info.shape[3]) || 3;
+          INPUT_DTYPE = String(js.model_info.dtype || "float32");
+          setText(modelMeta, `Input shape: [1, ${INPUT_H}, ${INPUT_W}, ${INPUT_C}] | dtype: ${INPUT_DTYPE}`, "small mono status-ok");
+        } else if (js.model_info && js.model_info.error) {
+          setText(modelMeta, `Input shape: fallback [1, 64, 64, 3] | ${js.model_info.error}`, "small mono status-warn");
+        }
+      } catch (e) {
+        setText(serverStatus, `Server status: not reachable (${String(e)})`, "small mono status-err");
+        setText(modelMeta, "Input shape: fallback [1, 64, 64, 3]", "small mono status-warn");
+      }
+    }
+
+    async function fetchDatasetImagesFromLabelsCsv() {
+      const res = await fetch(`/dataset/labels.csv?v=${Date.now()}`);
+      if (!res.ok) throw new Error(`labels.csv HTTP ${res.status}`);
+      const csvText = await res.text();
+      const lines = csvText.split(/\r?\n/).filter(Boolean);
+      if (lines.length <= 1) return [];
+      const files = [];
+      const seen = new Set();
+      for (let i = 1; i < lines.length; i++) {
+        const name = lines[i].split(",")[0].trim();
+        if (!name || seen.has(name)) continue;
+        seen.add(name);
+        files.push(name);
+        if (files.length >= DATASET_LIMIT) break;
+      }
+      return files.map((name) => ({
+        name,
+        url: `/dataset/images/${encodeURIComponent(name)}`,
+      }));
+    }
+
+    async function fetchDatasetImages() {
+      try {
+        const res = await fetch(`/api/images?limit=${DATASET_LIMIT}`);
+        const js = await res.json();
+        if (!res.ok || !js.ok) throw new Error(js.error || `HTTP ${res.status}`);
+        datasetImages = Array.isArray(js.images) ? js.images : [];
+        if (!datasetImages.length) {
+          throw new Error("No images returned from /api/images");
+        } else {
+          setText(datasetInfo, `Dataset status: ${datasetImages.length} images ready`, "small mono status-ok");
+        }
+      } catch (e) {
+        try {
+          datasetImages = await fetchDatasetImagesFromLabelsCsv();
+          if (!datasetImages.length) {
+            throw new Error("labels.csv contains no rows");
+          }
+          setText(
+            datasetInfo,
+            `Dataset status: ${datasetImages.length} images ready (fallback via labels.csv)`,
+            "small mono status-warn"
+          );
+        } catch (e2) {
+          datasetImages = [];
+          setText(datasetInfo, `Dataset status: failed (${String(e)} | ${String(e2)})`, "small mono status-err");
+        }
+      }
+    }
+
+    async function loadModel() {
+      const modelUrl = modelUrlInput.value.trim();
+      if (!window.tflite || !window.tflite.loadTFLiteModel) {
+        setText(modelStatus, "tfjs-tflite library failed to load.", "small status-err");
+        return;
+      }
+      loadModelBtn.disabled = true;
+      setText(modelStatus, "Loading model...", "small status-warn");
+      try {
+        tfliteModel = await window.tflite.loadTFLiteModel(modelUrl);
+        const warmup = INPUT_DTYPE.includes("uint8")
+          ? tf.zeros([1, INPUT_H, INPUT_W, INPUT_C], "int32")
+          : tf.zeros([1, INPUT_H, INPUT_W, INPUT_C], "float32");
+        const warmOut = tfliteModel.predict(warmup);
+        if (Array.isArray(warmOut)) {
+          await warmOut[0].data();
+          warmOut.forEach(t => t.dispose && t.dispose());
+        } else {
+          await warmOut.data();
+          warmOut.dispose && warmOut.dispose();
+        }
+        warmup.dispose();
+        runBtn.disabled = false;
+        setText(modelStatus, `Model loaded: ${modelUrl}`, "small status-ok");
+      } catch (e) {
+        setText(modelStatus, `Model load failed: ${String(e)}`, "small status-err");
+      } finally {
+        loadModelBtn.disabled = false;
+      }
+    }
+
+    function tensorFromImageElement(imgEl) {
+      const canvas = document.createElement("canvas");
+      canvas.width = INPUT_W;
+      canvas.height = INPUT_H;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(imgEl, 0, 0, INPUT_W, INPUT_H);
+      const data = ctx.getImageData(0, 0, INPUT_W, INPUT_H).data;
+      const out = new Float32Array(INPUT_W * INPUT_H * INPUT_C);
+      for (let i = 0, j = 0; i < data.length; i += 4) {
+        out[j++] = data[i + 0];
+        out[j++] = data[i + 1];
+        out[j++] = data[i + 2];
+      }
+      const t = tf.tensor4d(out, [1, INPUT_H, INPUT_W, INPUT_C], "float32");
+      return normalizeInputTensor(t);
+    }
+
+    function loadImageFromUrl(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Failed to load ${url}`));
+        img.src = `${url}${url.includes("?") ? "&" : "?"}v=${Date.now()}`;
+      });
+    }
+
+    async function runPredict(inputTensor) {
+      const out = tfliteModel.predict(inputTensor);
+      if (Array.isArray(out)) {
+        await out[0].data();
+        out.forEach(t => t.dispose && t.dispose());
+      } else {
+        await out.data();
+        out.dispose && out.dispose();
+      }
+    }
+
+    async function prepareBenchInputs() {
+      if (!datasetImages.length) await fetchDatasetImages();
+      if (!datasetImages.length) {
+        throw new Error("No dataset images available. Restart server and hard-reload Safari.");
+      }
+      const entries = [];
+      for (const item of datasetImages) {
+        const img = await loadImageFromUrl(item.url);
+        entries.push({ imageName: item.name, tensor: tensorFromImageElement(img) });
+      }
+      return entries;
+    }
+
+    async function uploadRows(rows) {
+      const res = await fetch("/api/metrics", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(rows),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    }
+
+    async function runBenchmark() {
+      if (!tfliteModel) {
+        setText(runStatus, "Load the model first.", "small status-err");
+        return;
+      }
+
+      const deviceLabel = (deviceLabelInput.value || "mobile-browser").trim();
+      const runId = `run_${Date.now()}`;
+
+      let benchInputs = [];
+      runBtn.disabled = true;
+      sendPingBtn.disabled = true;
+      summary.textContent = "";
+
+      try {
+        setText(runStatus, "Preparing inputs...", "small status-warn");
+        benchInputs = await prepareBenchInputs();
+        if (!benchInputs.length) throw new Error("No benchmark inputs prepared");
+
+        // Match benchmark style: warm-up runs on the first input only.
+        setText(runStatus, "Running warm-up on first image...", "small status-warn");
+        for (let i = 0; i < FIXED_WARMUP_FIRST_IMAGE; i++) {
+          await runPredict(benchInputs[0].tensor);
+        }
+
+        setText(runStatus, "Running measured iterations...", "small status-warn");
+        const latencies = [];
+        const rows = [];
+        let sampleIdx = 1;
+
+        for (let it = 0; it < FIXED_ITERATIONS; it++) {
+          for (let k = 0; k < benchInputs.length; k++) {
+            const entry = benchInputs[k];
+            const t0 = performance.now();
+            await runPredict(entry.tensor);
+            const t1 = performance.now();
+            const latency = t1 - t0;
+            latencies.push(latency);
+            rows.push({
+              timestamp_iso: new Date().toISOString(),
+              device_label: deviceLabel,
+              user_agent: navigator.userAgent,
+              run_id: runId,
+              sample_idx: sampleIdx++,
+              image_name: entry.imageName,
+              latency_ms: latency,
+              model_url: modelUrlInput.value.trim(),
+              input_source: FIXED_INPUT_SOURCE,
+              notes: "iphone browser tflite test",
+            });
+            setText(runStatus, `Progress: iter ${it + 1}/${FIXED_ITERATIONS}, img ${k + 1}/${benchInputs.length}`, "small");
+            await tf.nextFrame();
+          }
+        }
+
+        const sorted = [...latencies].sort((a, b) => a - b);
+        const mean = latencies.reduce((a, b) => a + b, 0) / latencies.length;
+        const median = percentile(sorted, 0.5);
+        const p90 = percentile(sorted, 0.9);
+        const min = sorted[0];
+        const max = sorted[sorted.length - 1];
+        const upload = await uploadRows(rows);
+
+        setText(runStatus, `Done. Uploaded ${upload.rows_written} rows.`, "small status-ok");
+        summary.textContent =
+`run_id: ${runId}
+device: ${deviceLabel}
+input_source: ${FIXED_INPUT_SOURCE}
+images_per_iteration: ${benchInputs.length}
+iterations: ${FIXED_ITERATIONS}
+warmup_first_image: ${FIXED_WARMUP_FIRST_IMAGE}
+samples_total: ${latencies.length}
+mean_ms: ${mean.toFixed(2)}
+median_ms: ${median.toFixed(2)}
+p90_ms: ${p90.toFixed(2)}
+min_ms: ${min.toFixed(2)}
+max_ms: ${max.toFixed(2)}
+csv: ${upload.csv_path}`;
+      } catch (e) {
+        setText(runStatus, `Benchmark failed: ${String(e)}`, "small status-err");
+      } finally {
+        benchInputs.forEach(entry => entry.tensor && entry.tensor.dispose && entry.tensor.dispose());
+        runBtn.disabled = false;
+        sendPingBtn.disabled = false;
+      }
+    }
+
+    async function sendTestRow() {
+      const row = {
+        timestamp_iso: new Date().toISOString(),
+        device_label: (deviceLabelInput.value || "mobile-browser").trim(),
+        user_agent: navigator.userAgent,
+        run_id: `ping_${Date.now()}`,
+        sample_idx: 1,
+        image_name: "ping",
+        latency_ms: 0.1234,
+        model_url: modelUrlInput.value.trim(),
+        input_source: "ping",
+        notes: "manual connectivity check",
+      };
+      try {
+        const upload = await uploadRows([row]);
+        setText(runStatus, `Ping ok. Uploaded ${upload.rows_written} row.`, "small status-ok");
+      } catch (e) {
+        setText(runStatus, `Ping failed: ${String(e)}`, "small status-err");
+      }
+    }
+
+    loadModelBtn.addEventListener("click", loadModel);
+    runBtn.addEventListener("click", runBenchmark);
+    sendPingBtn.addEventListener("click", sendTestRow);
+    inputInfo.textContent = "Fixed mode: first 20 files from dataset/images.";
+    checkServer();
+    fetchDatasetImages();
+  </script>
+</body>
+</html>

@@ -215,13 +215,57 @@ To validate a fresh setup end-to-end:
 5. Run `python main.py`
 6. Run evaluation command once
 7. Run benchmark command once
-8. Confirm output files exist under `results/`
+8. Run one Mobile Edge browser test (optional but recommended)
+9. Confirm output files exist under `results/`
+
+## Mobile Edge Reproduction (iPhone Safari)
+
+This section reproduces the on-device mobile timing run and stores results in a portable folder layout.
+
+1. From repository root, start the local collector on your PC:
+
+```powershell
+.\.venv\Scripts\python.exe -u mobile_eval_server.py --host 0.0.0.0 --port 8000 --model_path models/model.tflite --images_dir dataset/images --out_csv "results/Results mobile metrics/mobile_browser_metrics.csv"
+```
+
+2. Find your PC LAN IP (PowerShell):
+
+```powershell
+(Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway -ne $null } | Select-Object -First 1).IPv4Address.IPAddress
+```
+
+3. On iPhone Safari (same Wi-Fi), open:
+
+```text
+http://<your-pc-lan-ip>:8000/mobile
+```
+
+4. In the page, click:
+- `Load TFLite Model`
+- `Run Benchmark and Upload Metrics`
+
+5. Build CPU/GPU-style mobile result files:
+
+```bash
+python results/build_mobile_result_bundle.py --mobile_csv "results/Results mobile metrics/mobile_browser_metrics.csv" --out_dir "results/Results mobile metrics"
+```
+
+6. Optional KPI summary:
+
+```bash
+python results/summarize_mobile_metrics.py --csv "results/Results mobile metrics/mobile_browser_metrics.csv"
+```
+
+Notes:
+- The commands are repository-relative and work regardless of your local absolute folder path.
+- If you use a different output location, update `--out_csv` / `--mobile_csv` accordingly.
 
 ## Directory Structure
 
 ```text
 .
 ├── main.py                    # Interactive entry point
+├── mobile_eval_server.py      # Local server for iPhone browser timing collection
 ├── evaluate.py                # Batch evaluation and metrics export
 ├── performance.py             # CPU / GPU / Edge / TFLite benchmark
 ├── tflite_export.py           # Demo model export to TensorFlow Lite
@@ -229,6 +273,8 @@ To validate a fresh setup end-to-end:
 ├── requirements.txt
 ├── setup.ps1
 ├── LICENSE
+├── mobile_browser_test/
+│   └── README_LOCAL_TEST.md
 ├── data/
 │   └── labels_example.csv
 ├── dataset/
@@ -240,10 +286,19 @@ To validate a fresh setup end-to-end:
 │   └── model.tflite
 ├── results/
 │   ├── comparison_cpu_vs_colab.md
+│   ├── comparison_cpu_gpu_mobile.md
 │   ├── figures_cpu_vs_colab/
-│   ├── performance.csv
-│   ├── performance_plot.png
-│   └── tflite_performance.csv
+│   ├── figures_three_way/
+│   ├── Results CPU PYCHARM/
+│   ├── RESULTS GPU TF Google Collab/
+│   ├── Results mobile metrics/
+│   ├── performance.csv              # generated
+│   ├── performance_plot.png         # generated
+│   ├── tflite_performance.csv       # generated
+│   ├── generate_comparison_charts.py
+│   ├── generate_three_way_comparison.py
+│   ├── summarize_mobile_metrics.py
+│   └── build_mobile_result_bundle.py
 └── utils/
     ├── deepface_predict.py
     ├── drawing.py
@@ -302,22 +357,29 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 - The first execution may take longer because pretrained files are cached locally
 - Re-running the same command should be noticeably faster after the initial download
 
-## CPU vs Colab-GPU Comparison
+## CPU vs Colab-GPU vs Mobile Edge Comparison
 
-The repository also includes a documented comparison between a local CPU run in PyCharm and a Google Colab GPU run.
+The repository includes a documented three-way comparison between:
+
+- local CPU run in PyCharm
+- Google Colab GPU run
+- iPhone Safari on-device Mobile Edge run
+
 All related assets are stored in `results/figures_cpu_vs_colab/`, with the written summary in [results/comparison_cpu_vs_colab.md](results/comparison_cpu_vs_colab.md).
+An additional compact report is available in [results/comparison_cpu_gpu_mobile.md](results/comparison_cpu_gpu_mobile.md).
 
 High-level outcome:
 
-- Quality metrics were identical across the reported scopes in this run
-- Mean inference time per image was `3477.40 ms` on CPU and `3446.70 ms` on Colab-GPU
-- Median inference time was `731.20 ms` on CPU and `551.70 ms` on Colab-GPU
-- Prediction tuples were identical for all `20` images
-- Most visible timing differences came from warm-up and image-level latency variation rather than from quality changes
+- CPU and Colab-GPU quality metrics were identical across the reported scopes
+- Mean inference time per image: `3477.40 ms` (CPU), `3446.70 ms` (Colab-GPU), `3.60 ms` (Mobile Edge)
+- Median inference time: `731.17 ms` (CPU), `551.69 ms` (Colab-GPU), `3.50 ms` (Mobile Edge)
+- Mobile Edge in this demo path is timing-focused; quality fields are marked `N/A`
+- Warm-up and image-level latency variation remain clearly visible in per-image charts
 
 The comparison charts can be regenerated with:
 
 ```bash
+python results/build_mobile_result_bundle.py --mobile_csv "results/Results mobile metrics/mobile_browser_metrics.csv" --out_dir "results/Results mobile metrics"
 python results/generate_comparison_charts.py
 ```
 
@@ -342,6 +404,10 @@ python results/generate_comparison_charts.py
 #### 5) Image-wise latency delta
 
 ![Image delta lollipop](results/figures_cpu_vs_colab/05_image_delta_lollipop.png)
+
+#### 6) Three-way speedup overview
+
+![Three-way speedup panel](results/figures_cpu_vs_colab/06_three_way_speedup_panel.png)
 
 ## License
 
