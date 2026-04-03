@@ -1,0 +1,2 @@
+﻿device;model_path;time_per_image_s;std_s;min_time_s;max_time_s;total_runtime_s;n_runs;n_images_used;notes
+TFLite;models\model.tflite;9.3e-05;2.3e-05;8.4e-05;0.000188;0.004479;3;16;demo model (mobile deployment compatibility)

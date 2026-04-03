@@ -17,20 +17,20 @@
 
 ## Runtime Metrics
 
-| Metric | CPU | Colab-GPU | Delta | Delta % |
-|---|---:|---:|---:|---:|
-| Mean inference time per image (s) | 3.4774 | 3.4467 | -0.0307 | -0.8828% |
-| Total runtime (20 images, s) | 69.5483 | 68.9342 | -0.6141 | -0.8830% |
+| Metric | CPU (s) | CPU (ms) | Colab-GPU (s) | Colab-GPU (ms) | Delta (s) | Delta (ms) | Delta % |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Mean inference time per image | 3.4774 | 3477.4 | 3.4467 | 3446.7 | -0.0307 | -30.7 | -0.8828% |
+| Total runtime (20 images) | 69.5483 | 69548.3 | 68.9342 | 68934.2 | -0.6141 | -614.1 | -0.8830% |
 
 ### Warm-up-Aware Metrics (from `evaluation_results.csv`)
 
-| Metric | CPU | Colab-GPU | Delta | Delta % |
-|---|---:|---:|---:|---:|
-| Median inference time (s) | 0.7312 | 0.5517 | -0.1795 | -24.5466% |
-| Mean excluding first image (s) | 1.1582 | 1.3810 | 0.2228 | 19.2390% |
-| Trimmed mean without min/max (s) | 1.1907 | 1.4459 | 0.2552 | 21.4348% |
-| P90 inference time (s) | 1.6876 | 2.4798 | 0.7922 | 46.9402% |
-| Min/Max (s) | 0.5734 / 47.5424 | 0.2131 / 42.6945 | - | - |
+| Metric | CPU (s) | CPU (ms) | Colab-GPU (s) | Colab-GPU (ms) | Delta (s) | Delta (ms) | Delta % |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Median inference time | 0.7312 | 731.2 | 0.5517 | 551.7 | -0.1795 | -179.5 | -24.5466% |
+| Mean excluding first image | 1.1582 | 1158.2 | 1.3810 | 1381.0 | 0.2228 | 222.8 | 19.2390% |
+| Trimmed mean without min/max | 1.1907 | 1190.7 | 1.4459 | 1445.9 | 0.2552 | 255.2 | 21.4348% |
+| P90 inference time | 1.6876 | 1687.6 | 2.4798 | 2479.8 | 0.7922 | 792.2 | 46.9402% |
+| Min/Max | 0.5734 / 47.5424 | 573.4 / 47542.4 | 0.2131 / 42.6945 | 213.1 / 42694.5 | - | - | - |
 
 ## Prediction Consistency (Image Level)
 
@@ -72,5 +72,6 @@
 ## Takeaway
 
 - Classification quality is identical across all reported scopes in this experiment.
+- The end-to-end mean difference is small: `3477.4 ms` on CPU vs `3446.7 ms` on Colab-GPU.
 - Observed differences are primarily runtime-related and strongly influenced by warm-up behavior.
 - For a fair comparison, show both end-to-end metrics and warm-up-aware metrics together.
