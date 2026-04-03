@@ -3,6 +3,42 @@
 Local-first computer vision application for face-based age, gender, and emotion prediction.
 Inference runs on the local machine (edge scenario) with no cloud API dependency.
 
+## Architecture Preview
+
+```mermaid
+classDiagram
+direction LR
+
+class Main["main.py"]
+class Evaluate["evaluate.py"]
+class Benchmark["performance.py"]
+class Export["tflite_export.py"]
+class TFLite["tflite_inference.py"]
+class Utils["utils/*"]
+class Dataset["dataset/images + labels.csv"]
+class Model["models/model.tflite"]
+class Results["results/*"]
+
+Main --> Utils : uses
+Main --> Dataset : reads
+Main --> Results : writes
+
+Evaluate --> Utils : uses
+Evaluate --> Dataset : reads
+Evaluate --> Results : writes metrics
+
+Benchmark --> Dataset : reads
+Benchmark --> Results : writes timings
+Benchmark --> TFLite : calls
+
+Export --> Model : creates
+TFLite --> Model : loads
+TFLite --> Dataset : reads face crops
+TFLite --> Results : writes timings
+```
+
+PlantUML source for the same high-level structure is available in `docs/architecture.puml`.
+
 The repository includes:
 
 - Interactive app (`main.py`) for webcam and single-image analysis
@@ -174,7 +210,54 @@ Important separation:
 - Evaluation metrics (accuracy/precision/recall/F1) are computed from the DeepFace pipeline in `evaluate.py`
 - TFLite timings are deployment-oriented and independent from evaluation quality scores
 
-## Troubleshooting
+## Quick Validation Steps
+
+To validate a fresh setup end-to-end:
+
+1. Clone repository
+2. Set up Python 3.12/3.11 virtual environment
+3. Install dependencies from `requirements.txt`
+4. Run smoke test import command
+5. Run `python main.py`
+6. Run evaluation command once
+7. Run benchmark command once
+8. Confirm output files exist under `results/`
+
+## Directory Structure
+
+```text
+.
+├── main.py                    # Interactive entry point
+├── evaluate.py                # Batch evaluation and metrics export
+├── performance.py             # CPU / GPU / Edge / TFLite benchmark
+├── tflite_export.py           # Demo model export to TensorFlow Lite
+├── tflite_inference.py        # TensorFlow Lite timing run
+├── requirements.txt
+├── setup.ps1
+├── LICENSE
+├── data/
+│   └── labels_example.csv
+├── dataset/
+│   ├── images/
+│   └── labels.csv
+├── docs/
+│   └── architecture.puml
+├── models/
+│   └── model.tflite
+├── results/
+│   ├── comparison_cpu_vs_colab.md
+│   ├── figures_cpu_vs_colab/
+│   ├── performance.csv
+│   ├── performance_plot.png
+│   └── tflite_performance.csv
+└── utils/
+    ├── deepface_predict.py
+    ├── drawing.py
+    ├── face_detect.py
+    └── label_mapping.py
+```
+
+## Possible Bugs and Solutions
 
 ### `ModuleNotFoundError: No module named 'tensorflow'`
 
@@ -209,40 +292,21 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 - Improve lighting and image quality
 - Verify that `dataset/images` contains supported formats (`.jpg`, `.jpeg`, `.png`, `.bmp`, `.webp`)
 
-## Quick Validation Steps
+### Webcam window does not open
 
-To validate a fresh setup end-to-end:
+- Check whether another application is already using the camera
+- On Windows, verify camera permissions in system settings
+- If the OpenCV window appears behind the IDE, look for it in the taskbar
 
-1. Clone repository
-2. Set up Python 3.12/3.11 virtual environment
-3. Install dependencies from `requirements.txt`
-4. Run smoke test import command
-5. Run `python main.py`
-6. Run evaluation command once
-7. Run benchmark command once
-8. Confirm output files exist under `results/`
+### First run is much slower than later runs
 
-## Repository Structure
+- This is expected for model initialization and one-time setup work
+- Use median or warm-up-aware timing values for a fairer comparison
 
-```text
-main.py
-evaluate.py
-performance.py
-tflite_export.py
-tflite_inference.py
-requirements.txt
-setup.ps1
-utils/
-  face_detect.py
-  deepface_predict.py
-  drawing.py
-  label_mapping.py
-data/
-  labels_example.csv
-dataset/
-  images/
-results/
-```
+### DeepFace downloads weights on first use
+
+- The first execution may take longer because pretrained files are cached locally
+- Re-running the same command should be noticeably faster after the initial download
 
 ## CPU vs Colab-GPU Comparison
 
@@ -252,8 +316,8 @@ All related assets are stored in `results/figures_cpu_vs_colab/`, with the writt
 High-level outcome:
 
 - Quality metrics were identical across the reported scopes in this run
-- Mean inference time per image was `3.4774 s` (`3477.4 ms`) on CPU and `3.4467 s` (`3446.7 ms`) on Colab-GPU
-- Median inference time was `0.7312 s` (`731.2 ms`) on CPU and `0.5517 s` (`551.7 ms`) on Colab-GPU
+- Mean inference time per image was `3477.40 ms` on CPU and `3446.70 ms` on Colab-GPU
+- Median inference time was `731.20 ms` on CPU and `551.70 ms` on Colab-GPU
 - Prediction tuples were identical for all `20` images
 - Most visible timing differences came from warm-up and image-level latency variation rather than from quality changes
 
@@ -285,8 +349,16 @@ python results/generate_comparison_charts.py
 
 ![Image delta lollipop](results/figures_cpu_vs_colab/05_image_delta_lollipop.png)
 
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
 ## Limitations
 
 - Prediction quality depends on image quality and lighting
 - Pretrained models can have demographic bias
 - Small test datasets may not generalize
+
+## Development Environment
+
+The code for this project was developed using PyCharm, which offers a powerful IDE for Python development.
