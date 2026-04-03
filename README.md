@@ -1,5 +1,13 @@
 # Age, Gender, and Emotion Recognition (Local Edge Application)
 
+[![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-3776AB?logo=python&logoColor=white)](requirements.txt)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.13%2B-FF6F00?logo=tensorflow&logoColor=white)](requirements.txt)
+[![OpenCV](https://img.shields.io/badge/OpenCV-4.8%2B-5C3EE8?logo=opencv&logoColor=white)](requirements.txt)
+[![DeepFace](https://img.shields.io/badge/DeepFace-0.0.79%2B-7B1FA2)](requirements.txt)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Last Commit](https://img.shields.io/github/last-commit/Danielkis97/Age-Gender-and-Emotion-Recognition-Local-Edge-Application)](https://github.com/Danielkis97/Age-Gender-and-Emotion-Recognition-Local-Edge-Application/commits/main)
+[![Issues](https://img.shields.io/github/issues/Danielkis97/Age-Gender-and-Emotion-Recognition-Local-Edge-Application)](https://github.com/Danielkis97/Age-Gender-and-Emotion-Recognition-Local-Edge-Application/issues)
+
 Local-first computer vision application for face-based age, gender, and emotion prediction.
 Inference runs on the local machine (edge scenario) with no cloud API dependency.
 
