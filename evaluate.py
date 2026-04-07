@@ -1,5 +1,5 @@
 """
-Batch eval + confusion matrices. Nothing here phones home.
+Batch evaluation + confusion matrices. This script does not send data externally.
 """
 from __future__ import annotations
 

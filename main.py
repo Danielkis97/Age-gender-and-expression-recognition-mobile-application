@@ -1,4 +1,4 @@
-# Webcam + image demo, Rich menu. All inference stays local (DeepFace on disk).
+# Webcam and image demo with a Rich menu. All inference stays local (DeepFace on disk).
 from __future__ import annotations
 
 import argparse

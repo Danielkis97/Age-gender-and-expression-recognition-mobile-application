@@ -106,7 +106,7 @@ def build_markdown(
 ) -> str:
     scopes = ["overall", "gender", "emotion", "age"]
     lines: list[str] = []
-    lines.append("# CPU vs Colab-GPU comparison")
+    lines.append("# CPU vs Colab GPU comparison")
     lines.append("")
     lines.append(f"- CPU source: `{cpu_name}`")
     lines.append(f"- GPU source: `{gpu_name}`")

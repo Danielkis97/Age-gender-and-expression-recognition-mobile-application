@@ -1,1 +1,1 @@
-"""Project-local utility package for face analysis scripts."""
+"""Project-local utilities for face analysis scripts."""
