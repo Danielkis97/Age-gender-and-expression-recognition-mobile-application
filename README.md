@@ -389,8 +389,8 @@ python results/generate_comparison_charts.py
 
 - The iPhone run is real on-device browser inference and is valid for latency/throughput benchmarking.
 - In this repository, full quality metrics (accuracy/precision/recall/F1) are produced by the DeepFace desktop pipeline (CPU/GPU runs).
-- Achieving identical quality outputs directly on mobile browser would require browser-compatible Face+Age+Gender+Emotion models, plus re-validation against ground truth and likely calibration/retraining.
-- Current trade-off: fast and reproducible mobile timing on-device, but limited comparability for quality metrics.
+- Getting exactly the same quality outputs in a mobile browser would require browser-ready models for face, age, gender, and emotion, plus a full re-check against ground truth and likely calibration/retraining.
+- In this project, the practical trade-off is clear: mobile gives fast and reproducible on-device timing, while full quality metrics come from the desktop DeepFace evaluation pipeline.
 
 ### Comparison Figures
 

@@ -44,8 +44,25 @@ def _load_eval(metrics_csv: Path) -> dict[str, dict[str, str]]:
 
 
 def _load_perf(perf_csv: Path) -> dict[str, dict[str, str]]:
+    if not perf_csv.is_file():
+        return {}
     rows = _read_csv_rows(perf_csv)
     return _index_by(rows, "device")
+
+
+def _perf_time_with_fallback(
+    perf_rows: dict[str, dict[str, str]],
+    device_key: str,
+    eval_time_s: float,
+) -> float:
+    """
+    Prefer explicit benchmark timing from performance.csv.
+    If unavailable (or zero), fall back to evaluation mean timing.
+    """
+    t = _to_float(perf_rows.get(device_key, {}).get("time_per_image_s"))
+    if t > 0:
+        return t
+    return eval_time_s
 
 
 def _save_summary_csv(
@@ -161,8 +178,8 @@ def _plot_perf_comparison(
 
     cpu_eval_t = _to_float(cpu_eval.get("overall", {}).get("mean_inference_time_s"))
     gpu_eval_t = _to_float(gpu_eval.get("overall", {}).get("mean_inference_time_s"))
-    cpu_bench_t = _to_float(cpu_perf.get("CPU", {}).get("time_per_image_s"))
-    gpu_bench_t = _to_float(gpu_perf.get("GPU", {}).get("time_per_image_s"))
+    cpu_bench_t = _perf_time_with_fallback(cpu_perf, "CPU", cpu_eval_t)
+    gpu_bench_t = _perf_time_with_fallback(gpu_perf, "GPU", gpu_eval_t)
 
     labels = [
         "Eval local CPU",
