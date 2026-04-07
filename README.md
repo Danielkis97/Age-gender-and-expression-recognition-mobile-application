@@ -8,8 +8,8 @@
 [![Last Commit](https://img.shields.io/github/last-commit/Danielkis97/Age-Gender-and-Emotion-Recognition-Local-Edge-Application)](https://github.com/Danielkis97/Age-Gender-and-Emotion-Recognition-Local-Edge-Application/commits/main)
 [![Issues](https://img.shields.io/github/issues/Danielkis97/Age-Gender-and-Emotion-Recognition-Local-Edge-Application)](https://github.com/Danielkis97/Age-Gender-and-Emotion-Recognition-Local-Edge-Application/issues)
 
-Local-first computer vision application for face-based age, gender, and emotion prediction.
-Inference runs on the local machine (edge scenario) with no cloud API dependency.
+This project is a local computer vision app that predicts age, gender, and emotion from face images.
+All inference runs on the local machine (edge-style setup), with no cloud API dependency.
 
 ## Architecture Preview
 
@@ -23,19 +23,19 @@ Diagram scope:
 
 PlantUML source for the same high-level structure is available in `docs/architecture.puml`.
 
-The repository includes:
+This repository includes:
 
 - Interactive app (`main.py`) for webcam and single-image analysis
 - Batch evaluation (`evaluate.py`) with confusion matrices and CSV outputs
 - Performance benchmark (`performance.py`) for CPU/GPU/Edge/TFLite comparison
 - TFLite export and inference demo for mobile deployment compatibility
 
-## Key Characteristics
+## Why this project is practical
 
 - **Local execution:** no external inference service required
-- **Reproducible setup:** pinned dependency list via `requirements.txt`
-- **Evaluation outputs:** structured CSV artifacts in `results/`
-- **Deployment perspective:** TFLite demo path separated from evaluation metrics
+- **Reproducible setup:** dependency list is in `requirements.txt`
+- **Clear outputs:** evaluation and timing files are saved in `results/`
+- **Scope clarity:** TFLite mobile timing is separated from desktop quality metrics
 
 ## System Requirements
 
@@ -90,13 +90,14 @@ python -c "import tensorflow as tf; print(tf.config.list_physical_devices())"
 ```powershell
 cd path\to\Age-Gender-and-Emotion-Recognition-Local-Edge-Application
 Remove-Item -Recurse -Force .venv -ErrorAction SilentlyContinue
-py -3.12 -m venv .venv
+if (Get-Command py -ErrorAction SilentlyContinue) { py -3.12 -m venv .venv } else { python -m venv .venv }
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-If needed, replace `-3.12` with `-3.11`.
+If needed, replace `-3.12` with `-3.11` when using `py`.
+The project `setup.ps1` script also supports both `py` and `python`.
 
 If script activation is blocked:
 
@@ -218,6 +219,20 @@ To validate a fresh setup end-to-end:
 8. Run one Mobile Edge browser test (optional but recommended)
 9. Confirm output files exist under `results/`
 
+## Assignment Requirement Coverage (Task 2)
+
+| Requirement | Status | Evidence in repository |
+|---|---|---|
+| Deploy application on edge/mobile device | Done | iPhone Safari on-device benchmark flow via `mobile_eval_server.py` and `mobile_browser_test/` |
+| Report expected performance on CPU, GPU, and edge | Done | `results/comparison_cpu_gpu_mobile.md`, `results/comparison_cpu_vs_colab.md`, comparison figures |
+| Evaluate on 20 images with balanced groups | Done | `dataset/labels.csv` (20 samples with balanced adult/elderly, male/female, happy/sad) |
+| Provide evaluation metrics tables | Done | `results/Results CPU PYCHARM/metrics.csv`, `results/RESULTS GPU TF Google Collab/metrics.csv` |
+| Include source code in appendix-ready form | Done | Full implementation files in repository (`main.py`, `evaluate.py`, `performance.py`, etc.) |
+
+Note on scope:
+- Mobile browser output is used as on-device timing evidence.
+- Full quality metrics (accuracy/precision/recall/F1) are generated from the desktop DeepFace pipeline for direct comparability.
+
 ## Mobile Edge Reproduction (iPhone Safari)
 
 This section reproduces the on-device mobile timing run and stores results in a portable folder layout.
@@ -308,7 +323,7 @@ Notes:
     └── label_mapping.py
 ```
 
-## Possible Bugs and Solutions
+## Troubleshooting
 
 ### `ModuleNotFoundError: No module named 'tensorflow'`
 
@@ -318,6 +333,14 @@ Windows:
 
 ```powershell
 .\.venv\Scripts\python.exe main.py
+```
+
+### `ImportError: Could not find the DLL(s) 'msvcp140.dll' or 'msvcp140_1.dll'`
+
+Install the Microsoft Visual C++ Redistributable (x64), then re-open the terminal and retry:
+
+```powershell
+winget install --id Microsoft.VCRedist.2015+.x64 -e --source winget --accept-source-agreements --accept-package-agreements
 ```
 
 ### `No matching distribution found for tensorflow`
@@ -433,6 +456,16 @@ The same comparison suite is also exported to `results/figures_three_way/` and i
 #### 7) Annotated three-way timing KPIs
 
 ![Three-way timing KPIs](results/figures_three_way/01_timing_kpis_three_way.png)
+
+## Contributing
+
+Contributions are welcome.
+
+1. Fork the repository
+2. Create a feature branch
+3. Open a pull request with a short summary and test notes
+
+Please keep documentation and commit messages in English.
 
 ## License
 
