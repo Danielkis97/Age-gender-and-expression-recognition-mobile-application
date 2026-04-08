@@ -219,19 +219,6 @@ To validate a fresh setup end-to-end:
 8. Run one Mobile Edge browser test (optional but recommended)
 9. Confirm output files exist under `results/`
 
-## Project Coverage Snapshot
-
-| Area | Status | Evidence in repository |
-|---|---|---|
-| Mobile on-device benchmark path | Done | iPhone Safari on-device benchmark flow via `mobile_eval_server.py` and `mobile_browser_test/` |
-| Performance reporting across environments | Done | `results/comparison_cpu_gpu_mobile.md`, `results/comparison_cpu_vs_colab.md`, comparison figures |
-| Evaluation on a labeled 20-image set | Done | `dataset/labels.csv` and generated result files |
-| Quality metrics export | Done | `results/Results CPU PYCHARM/metrics.csv`, `results/RESULTS GPU TF Google Collab/metrics.csv` |
-
-Scope note:
-- Mobile browser output is used as on-device timing evidence.
-- Full quality metrics (accuracy/precision/recall/F1) are generated from the desktop DeepFace pipeline for direct comparability.
-
 ## Mobile Edge Reproduction (iPhone Safari)
 
 This section reproduces the on-device mobile timing run and stores results in a portable folder layout.
