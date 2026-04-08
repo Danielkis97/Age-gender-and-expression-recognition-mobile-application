@@ -294,9 +294,9 @@ Notes:
 │   ├── Results CPU PYCHARM/
 │   ├── RESULTS GPU TF Google Collab/
 │   ├── Results mobile metrics/
-│   ├── performance.csv              # generated
-│   ├── performance_plot.png         # generated
-│   ├── tflite_performance.csv       # generated
+│   ├── performance.csv              
+│   ├── performance_plot.png         
+│   ├── tflite_performance.csv       
 │   ├── generate_comparison_charts.py
 │   ├── generate_three_way_comparison.py
 │   ├── summarize_mobile_metrics.py
