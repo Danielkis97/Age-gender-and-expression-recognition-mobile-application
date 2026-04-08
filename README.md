@@ -219,17 +219,16 @@ To validate a fresh setup end-to-end:
 8. Run one Mobile Edge browser test (optional but recommended)
 9. Confirm output files exist under `results/`
 
-## Assignment Requirement Coverage (Task 2)
+## Project Coverage Snapshot
 
-| Requirement | Status | Evidence in repository |
+| Area | Status | Evidence in repository |
 |---|---|---|
-| Deploy application on edge/mobile device | Done | iPhone Safari on-device benchmark flow via `mobile_eval_server.py` and `mobile_browser_test/` |
-| Report expected performance on CPU, GPU, and edge | Done | `results/comparison_cpu_gpu_mobile.md`, `results/comparison_cpu_vs_colab.md`, comparison figures |
-| Evaluate on 20 images with balanced groups | Done | `dataset/labels.csv` (20 samples with balanced adult/elderly, male/female, happy/sad) |
-| Provide evaluation metrics tables | Done | `results/Results CPU PYCHARM/metrics.csv`, `results/RESULTS GPU TF Google Collab/metrics.csv` |
-| Include source code in appendix-ready form | Done | Full implementation files in repository (`main.py`, `evaluate.py`, `performance.py`, etc.) |
+| Mobile on-device benchmark path | Done | iPhone Safari on-device benchmark flow via `mobile_eval_server.py` and `mobile_browser_test/` |
+| Performance reporting across environments | Done | `results/comparison_cpu_gpu_mobile.md`, `results/comparison_cpu_vs_colab.md`, comparison figures |
+| Evaluation on a labeled 20-image set | Done | `dataset/labels.csv` and generated result files |
+| Quality metrics export | Done | `results/Results CPU PYCHARM/metrics.csv`, `results/RESULTS GPU TF Google Collab/metrics.csv` |
 
-Note on scope:
+Scope note:
 - Mobile browser output is used as on-device timing evidence.
 - Full quality metrics (accuracy/precision/recall/F1) are generated from the desktop DeepFace pipeline for direct comparability.
 
@@ -297,8 +296,7 @@ Notes:
 │   └── labels.csv
 ├── docs/
 │   ├── architecture.puml
-│   ├── architecture_preview.png
-│   └── appendix_gantt_project_progress.md
+│   └── architecture_preview.png
 ├── models/
 │   └── model.tflite
 ├── results/
@@ -481,6 +479,3 @@ This project is licensed under the [MIT License](LICENSE).
 
 The code for this project was developed using PyCharm, which offers a powerful IDE for Python development.
 
-## Appendix
-
-- Project progress Gantt chart: [docs/appendix_gantt_project_progress.md](docs/appendix_gantt_project_progress.md)
