@@ -1,4 +1,4 @@
-# TensorFlow/DeepFace: use Python 3.10–3.12 on Windows. Python 3.13+ often has no tensorflow wheels (pip: "No matching distribution").
+# TensorFlow/DeepFace: use Python 3.10–3.12 on Windows. Python 3.13+ often has no TensorFlow wheels (pip: "No matching distribution").
 opencv-python>=4.8.0
 deepface>=0.0.79
 tensorflow>=2.13.0

@@ -92,4 +92,4 @@ Write-Host "Upgrading pip and installing requirements ..."
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 
-Write-Host "Done. Activate later with:  .\.venv\Scripts\Activate.ps1"
+Write-Host "Done. Activate later with .\.venv\Scripts\Activate.ps1"

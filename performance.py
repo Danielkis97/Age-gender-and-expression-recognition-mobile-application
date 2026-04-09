@@ -73,7 +73,7 @@ def bench_once(image_path: Path, n_runs: int) -> dict:
     crop = frame[y0:y1, x0:x1]
 
     predict_face_region(crop, enforce_detection=False)
-    predict_face_region(crop, enforce_detection=False)  # warm up — first calls are noisy
+    predict_face_region(crop, enforce_detection=False)  # warm up — early calls are noisy
 
     samples = []
     for _ in range(n_runs):

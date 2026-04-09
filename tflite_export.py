@@ -15,7 +15,7 @@ DEFAULT_INPUT_SHAPE = (64, 64, 3)
 
 
 def build_demo_model(input_shape: tuple[int, int, int] = DEFAULT_INPUT_SHAPE):
-    # Small untrained model: Conv -> pooling -> GAP -> Dense.
+    # Small untrained model: Conv -> pooling -> GAP -> dense output.
     # Output is not used for accuracy evaluation.
     import tensorflow as tf
 

@@ -66,7 +66,7 @@ def measure_tflite_performance(
 
     if not model_path.is_file():
         con.print(f"[yellow]Model not found:[/yellow] {model_path}")
-        con.print("[dim]Exporting demo model now…[/dim]")
+        con.print("[dim]Exporting demo model...[/dim]")
         from tflite_export import export_tflite
 
         export_tflite(out_path=model_path)
