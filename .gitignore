@@ -5,6 +5,7 @@ __pycache__/
 *.pyo
 *.pyd
 *.log
+*.tmp
 .ipynb_checkpoints/
 Thumbs.db
 .DS_Store

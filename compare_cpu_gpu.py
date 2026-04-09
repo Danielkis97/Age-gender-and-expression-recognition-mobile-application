@@ -57,7 +57,7 @@ def _perf_time_with_fallback(
 ) -> float:
     """
     Prefer explicit benchmark timing from performance.csv.
-    If unavailable (or zero), fall back to evaluation mean timing.
+    If it is unavailable (or zero), fall back to evaluation mean timing.
     """
     t = _to_float(perf_rows.get(device_key, {}).get("time_per_image_s"))
     if t > 0:

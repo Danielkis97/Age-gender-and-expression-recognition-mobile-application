@@ -60,6 +60,6 @@ Tap **Send One Test Row** to verify that iPhone can reach the PC collector.
 
 ## Notes
 
-- This is browser-based on-device inference (not a native iOS app).
+- This is browser-based on-device inference, not a native iOS app.
 - iPhone and PC must be in the same local network.
 - Allow Python/port 8000 through Windows Firewall for private networks.
