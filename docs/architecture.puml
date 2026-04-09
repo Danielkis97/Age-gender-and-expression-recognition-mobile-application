@@ -1,46 +1,40 @@
 @startuml
-title Age, Gender, and Emotion Recognition - High-Level Architecture
+title Simplified System and Code Structure of the Implemented Pipeline
 left to right direction
 skinparam componentStyle rectangle
 
-actor User
+rectangle "Input Data\n(dataset/images + labels.csv)" as InputData
+rectangle "Runtime Inputs\n(webcam / single image)" as RuntimeInputs
 
-package "Application Layer" {
-  [main.py] as Main
-  [evaluate.py] as Evaluate
-  [performance.py] as Benchmark
-  [tflite_export.py] as Export
-  [tflite_inference.py] as TFLite
+package "Core Pipeline" {
+  rectangle "Detection + Preprocessing\n(utils/face_detect.py, preprocessing)" as Detect
+  rectangle "Attribute Inference\n(utils/deepface_predict.py)" as Infer
 }
 
-package "Project Assets" {
-  folder "dataset/" as Dataset
-  folder "utils/" as Utils
-  folder "results/" as Results
-  file "models/model.tflite" as Model
+package "Execution Paths" {
+  rectangle "main.py\n(interactive app)" as Main
+  rectangle "evaluate.py\n(quality metrics)" as Evaluate
+  rectangle "performance.py\n(CPU/GPU benchmark)" as Benchmark
+  rectangle "tflite_inference.py\n(TFLite timing)" as TFLite
+  rectangle "mobile_eval_server.py\n(iPhone browser timing)" as Mobile
 }
 
-User --> Main : webcam / image mode
-User --> Evaluate : evaluation run
-User --> Benchmark : performance run
-User --> Export : export demo model
-User --> TFLite : timing run
+package "Outputs" {
+  file "results/*.csv\nmetrics, predictions" as CsvOut
+  file "results/*.png\ncomparison charts" as PlotOut
+}
 
-Main --> Utils : face detection / prediction helpers
-Main --> Dataset : read images
-Main --> Results : write outputs
+InputData --> Detect
+RuntimeInputs --> Infer
+Detect --> Infer
 
-Evaluate --> Utils : label mapping / prediction helpers
-Evaluate --> Dataset : read images + labels
-Evaluate --> Results : write metrics
+Detect --> Main
+Detect --> Evaluate
+Infer --> Benchmark
+Infer --> TFLite
+Infer --> Mobile
 
-Benchmark --> Dataset : read images
-Benchmark --> Results : write benchmark files
-Benchmark --> TFLite : include TFLite timings
-
-Export --> Model : create .tflite file
-TFLite --> Model : load model
-TFLite --> Dataset : read face crops
-TFLite --> Results : write timing csv
+Evaluate --> CsvOut
+Benchmark --> PlotOut
 
 @enduml
