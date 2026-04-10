@@ -15,12 +15,6 @@ All inference runs on the local machine (edge-style setup), with no cloud API de
 
 [![Architecture preview](docs/architecture_preview.png)](docs/architecture_preview.png)
 
-Diagram scope:
-
-- `evaluate.py` uses `dataset/labels.csv` as ground truth for metrics
-- `performance.py` includes the TFLite timing path via `tflite_inference.py`
-- if `models/model.tflite` is missing, the flow can generate it via `tflite_export.py`
-
 PlantUML source for the same high-level structure is available in `docs/architecture.puml`.
 
 This repository includes:
@@ -29,13 +23,6 @@ This repository includes:
 - Batch evaluation (`evaluate.py`) with confusion matrices and CSV outputs
 - Performance benchmark (`performance.py`) for CPU/GPU/Edge/TFLite comparison
 - TFLite export and inference demo for mobile deployment compatibility
-
-## Why this project is practical
-
-- **Local execution:** no external inference service required
-- **Reproducible setup:** dependency list is in `requirements.txt`
-- **Clear outputs:** evaluation and timing files are saved in `results/`
-- **Scope clarity:** TFLite mobile timing is separated from desktop quality metrics
 
 ## System Requirements
 
